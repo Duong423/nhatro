@@ -9,7 +9,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,5 +54,32 @@ public class HostelController {
         } catch (RuntimeException e) {
             throw new RuntimeException("Failed to upload images: " + e.getMessage());
         }
+    }
+
+    /**
+     * Lấy danh sách tất cả hostel (cho tenant xem)
+     */
+    @PreAuthorize("hasRole('TENANT')")
+    @GetMapping("/tenant/detailsHostel")
+    public ApiResponse<List<HostelResponseDto>> getAllHostelsForTenant() {
+        List<HostelResponseDto> hostels = hostelService.getAllHostelsForTenant();
+        return ApiResponse.<List<HostelResponseDto>>builder()
+                .code(200)
+                .message("Lấy chi tiết danh sách tất cả nhà trọ thành công")
+                .result(hostels)
+                .build();
+    }
+
+    /**
+     * Lấy chi tiết 1 hostel theo ID
+     */
+    @GetMapping("/tenant/detailsHostel/{hostelId}")
+    public ApiResponse<HostelResponseDto> getHostelById(@PathVariable Long hostelId) {
+        HostelResponseDto hostel = hostelService.getHostelById(hostelId);
+        return ApiResponse.<HostelResponseDto>builder()
+                .code(200)
+                .message("Lấy chi tiết hostel thành công")
+                .result(hostel)
+                .build();
     }
 }

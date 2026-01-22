@@ -18,7 +18,7 @@ public class ContractService {
 
     @ManyToOne
     @JoinColumn(name = "service_id")
-    private Service service;
+    private ServiceHostel service;
 
     private Integer quantity; // VD: 2 chiếc xe máy
     private LocalDate startDate;

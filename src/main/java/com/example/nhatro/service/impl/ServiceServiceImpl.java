@@ -3,7 +3,7 @@ package com.example.nhatro.service.impl;
 import com.example.nhatro.dto.request.ServiceRequestDTO.ServiceRequestDto;
 import com.example.nhatro.dto.response.ServiceResponseDto;
 import com.example.nhatro.entity.Hostel;
-import com.example.nhatro.entity.Service;
+import com.example.nhatro.entity.ServiceHostel;
 import com.example.nhatro.entity.User;
 import com.example.nhatro.repository.HostelRepository;
 import com.example.nhatro.repository.ServiceRepository;
@@ -30,13 +30,13 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
                 .orElseThrow(() -> new RuntimeException("Hostel không tồn tại"));
         
         // Tạo service mới
-        Service service = new Service();
+        ServiceHostel service = new ServiceHostel();
         service.setHostel(hostel);
         service.setServiceName(request.getServiceName());
         service.setPrice(request.getPrice());
         service.setUnit(request.getUnit());
         
-        Service savedService = serviceRepository.save(service);
+        ServiceHostel savedService = serviceRepository.save(service);
         
         return convertToDto(savedService);
     }
@@ -58,28 +58,28 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
         }
         
         // Tạo service mới
-        Service service = new Service();
+        ServiceHostel service = new ServiceHostel();
         service.setHostel(hostel);
         service.setServiceName(request.getServiceName());
         service.setPrice(request.getPrice());
         service.setUnit(request.getUnit());
         
-        Service savedService = serviceRepository.save(service);
+        ServiceHostel savedService = serviceRepository.save(service);
         
         return convertToDto(savedService);
     }
 
     @Override
     @Transactional
-    public Service createServiceForNewHostel(Hostel hostel, com.example.nhatro.dto.request.ServiceRequestDTO.ServiceInHostelDto serviceDto) {
-        Service service;
+    public ServiceHostel createServiceForNewHostel(Hostel hostel, com.example.nhatro.dto.request.ServiceRequestDTO.ServiceInHostelDto serviceDto) {
+        ServiceHostel service;
         
         if (serviceDto.isExistingService()) {
             // Chọn service có sẵn - copy thông tin từ service template
-            Service existingService = serviceRepository.findById(serviceDto.getServiceId())
+            ServiceHostel existingService = serviceRepository.findById(serviceDto.getServiceId())
                     .orElseThrow(() -> new RuntimeException("Service không tồn tại"));
             
-            service = new Service();
+            service = new ServiceHostel();
             service.setServiceName(existingService.getServiceName());
             service.setPrice(existingService.getPrice());
             service.setUnit(existingService.getUnit());
@@ -89,7 +89,7 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
                 throw new RuntimeException("Thông tin service không đầy đủ");
             }
             
-            service = new Service();
+            service = new ServiceHostel();
             service.setServiceName(serviceDto.getServiceName());
             service.setPrice(serviceDto.getPrice());
             service.setUnit(serviceDto.getUnit());
@@ -138,7 +138,7 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
     @Transactional
     public ServiceResponseDto updateService(Long serviceId, ServiceRequestDto request) {
         // Lấy service
-        Service service = serviceRepository.findById(serviceId)
+        ServiceHostel service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service không tồn tại"));
         
         // Kiểm tra hostel có tồn tại không (nếu request có hostelId)
@@ -153,7 +153,7 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
         service.setPrice(request.getPrice());
         service.setUnit(request.getUnit());
         
-        Service updatedService = serviceRepository.save(service);
+        ServiceHostel updatedService = serviceRepository.save(service);
         
         return convertToDto(updatedService);
     }
@@ -167,7 +167,7 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
         
         // Lấy service
-        Service service = serviceRepository.findById(serviceId)
+        ServiceHostel service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service không tồn tại"));
         
         // Kiểm tra owner có sở hữu service này không (qua hostel)
@@ -180,7 +180,7 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
         service.setPrice(request.getPrice());
         service.setUnit(request.getUnit());
         
-        Service updatedService = serviceRepository.save(service);
+        ServiceHostel updatedService = serviceRepository.save(service);
         
         return convertToDto(updatedService);
     }
@@ -204,7 +204,7 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
         
         // Lấy service
-        Service service = serviceRepository.findById(serviceId)
+        ServiceHostel service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service không tồn tại"));
         
         // Kiểm tra owner có sở hữu service này không (qua hostel)
@@ -218,7 +218,7 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
     /**
      * Convert entity to DTO
      */
-    private ServiceResponseDto convertToDto(Service service) {
+    private ServiceResponseDto convertToDto(ServiceHostel service) {
         return ServiceResponseDto.builder()
                 .serviceId(service.getServiceId())
                 .hostelId(service.getHostel().getHostelId())

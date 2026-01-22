@@ -5,7 +5,7 @@ import com.example.nhatro.dto.request.ServiceRequestDTO.ServiceInHostelDto;
 import com.example.nhatro.dto.response.HostelResponseDto;
 import com.example.nhatro.entity.Hostel;
 import com.example.nhatro.entity.User;
-import com.example.nhatro.entity.Service;
+// (Removed import for entity Service to avoid name clash)
 
 import com.example.nhatro.mapper.HostelMapper;
 import com.example.nhatro.repository.HostelRepository;
@@ -19,12 +19,14 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class HostelServiceImpl implements HostelService {
     @Autowired
     private HostelRepository hostelRepository;
@@ -75,10 +77,10 @@ public class HostelServiceImpl implements HostelService {
         
         // Tạo services cho hostel 
         if (dto.getServices() != null && !dto.getServices().isEmpty()) {
-            List<com.example.nhatro.entity.Service> createdServices = new ArrayList<>();
+            List<com.example.nhatro.entity.ServiceHostel> createdServices = new ArrayList<>();
             for (ServiceInHostelDto serviceDto : dto.getServices()) {
                 try {
-                    Service service = serviceService.createServiceForNewHostel(savedHostel, serviceDto);
+                    com.example.nhatro.entity.ServiceHostel service = serviceService.createServiceForNewHostel(savedHostel, serviceDto);
                     createdServices.add(service);
                 } catch (Exception e) {
                     // Log error nhưng không throw để không ảnh hưởng việc tạo hostel
@@ -86,7 +88,6 @@ public class HostelServiceImpl implements HostelService {
                     e.printStackTrace();
                 }
             }
-            
             // Cập nhật list services vào object hostel để trả về response đúng
             savedHostel.setServices(createdServices);
         }
@@ -132,5 +133,31 @@ public class HostelServiceImpl implements HostelService {
         
         Hostel savedHostel = hostelRepository.save(hostel);
         return HostelMapper.toResponseDto(savedHostel);
+    }
+     
+
+    /**
+     * Lấy chi tiết toàn bộ phòng trọ
+     */
+    @Override
+    public List<HostelResponseDto> getAllHostelsForTenant() {
+        List<Hostel> hostels = hostelRepository.findAll();
+        List<HostelResponseDto> responseDtos = new ArrayList<>();
+        for (Hostel hostel : hostels) {
+            responseDtos.add(HostelMapper.toResponseDto(hostel));
+        }
+        return responseDtos;
+    }
+    
+
+    /**
+     * Lấy chi tiết 1 hostel theo ID
+     */
+
+    @Override
+    public HostelResponseDto getHostelById(Long hostelId) {
+        Hostel hostel = hostelRepository.findByIdWithServices(hostelId)
+                .orElseThrow(() -> new RuntimeException("Hostel không tồn tại"));
+        return HostelMapper.toResponseDto(hostel);
     }
 }

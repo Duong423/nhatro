@@ -4,7 +4,7 @@ import com.example.nhatro.dto.request.ServiceRequestDTO.ServiceInHostelDto;
 import com.example.nhatro.dto.request.ServiceRequestDTO.ServiceRequestDto;
 import com.example.nhatro.dto.response.ServiceResponseDto;
 import com.example.nhatro.entity.Hostel;
-import com.example.nhatro.entity.Service;
+import com.example.nhatro.entity.ServiceHostel;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public interface ServiceService {
      * Tạo service cho hostel mới (không cần check hostel tồn tại)
      * Dùng khi tạo hostel và services cùng lúc
      */
-    Service createServiceForNewHostel(Hostel hostel, ServiceInHostelDto serviceDto);
+    ServiceHostel createServiceForNewHostel(Hostel hostel, ServiceInHostelDto serviceDto);
     
     /**
      * Lấy tất cả dịch vụ (admin)

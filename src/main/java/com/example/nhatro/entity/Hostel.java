@@ -53,7 +53,6 @@ public class Hostel extends BaseEntity {
     private String contactPhone;
     private String contactEmail;
    
-   
     private Integer roomCount;
     private Integer maxOccupancy;
 
@@ -76,6 +75,6 @@ public class Hostel extends BaseEntity {
 
     @OneToMany(mappedBy = "hostel", cascade = CascadeType.ALL)
     @ToString.Exclude
-    private List<Service> services;
+    private List<ServiceHostel> services;
 
 }

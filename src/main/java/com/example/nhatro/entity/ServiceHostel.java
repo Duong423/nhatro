@@ -10,7 +10,7 @@ import com.example.nhatro.enums.ServiceUnit;
 @Entity
 @Table(name = "services")
 @Data
-public class Service {
+public class ServiceHostel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long serviceId;
