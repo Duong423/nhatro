@@ -33,6 +33,8 @@ public class SecurityConfig {
                 // Public endpoints - không cần authentication
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/api/hostels/tenant/detailsHostel").permitAll()
+                .requestMatchers("/api/hostels/tenant/detailsHostel/**").permitAll()
                 
                 // Admin only endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

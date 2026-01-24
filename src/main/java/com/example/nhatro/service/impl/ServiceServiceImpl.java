@@ -41,6 +41,10 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
         return convertToDto(savedService);
     }
 
+    
+    /**
+     * Thêm dịch vụ mới vào hostel đã tồn tại (dành cho owner)
+     */
     @Override
     @Transactional
     public ServiceResponseDto addServiceByOwner(ServiceRequestDto request, String ownerEmail) {
@@ -69,6 +73,10 @@ public class ServiceServiceImpl implements com.example.nhatro.service.ServiceSer
         return convertToDto(savedService);
     }
 
+
+    /**
+     * tạo mới dịch vụ kèm theo lúc tạo mới hostel
+     */
     @Override
     @Transactional
     public ServiceHostel createServiceForNewHostel(Hostel hostel, com.example.nhatro.dto.request.ServiceRequestDTO.ServiceInHostelDto serviceDto) {

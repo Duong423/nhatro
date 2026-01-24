@@ -17,6 +17,8 @@ public interface HostelService {
 
     List<HostelResponseDto> getAllHostelsForTenant();
     
+    List<HostelResponseDto> getHostelsByOwner();
+    
     HostelResponseDto getHostelById(Long hostelId);
 
     UpdateHostelResponseDTO updateHostel(Long hostelId, UpdateHostelRequestDTO updateHostelRequestDTO);

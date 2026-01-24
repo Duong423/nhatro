@@ -14,8 +14,6 @@ import com.example.nhatro.repository.HostelRepository;
 import com.example.nhatro.repository.UserRepository;
 import com.example.nhatro.service.CloudinaryService;
 import com.example.nhatro.service.HostelService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -219,6 +217,26 @@ public class HostelServiceImpl implements HostelService {
     @Override
     public List<HostelResponseDto> getAllHostelsForTenant() {
         List<Hostel> hostels = hostelRepository.findAll();
+        List<HostelResponseDto> responseDtos = new ArrayList<>();
+        for (Hostel hostel : hostels) {
+            responseDtos.add(HostelMapper.toResponseDto(hostel));
+        }
+        return responseDtos;
+    }
+    
+    /**
+     * Lấy danh sách hostel của owner hiện tại
+     */
+    @Override
+    public List<HostelResponseDto> getHostelsByOwner() {
+        // Lấy thông tin owner đang đăng nhập
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User owner = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+        
+        // Lấy danh sách hostel của owner này
+        List<Hostel> hostels = hostelRepository.findByOwnerId(owner.getId());
         List<HostelResponseDto> responseDtos = new ArrayList<>();
         for (Hostel hostel : hostels) {
             responseDtos.add(HostelMapper.toResponseDto(hostel));

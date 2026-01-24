@@ -81,15 +81,28 @@ public class HostelController {
     }
 
     /**
-     * Lấy danh sách tất cả hostel (cho tenant xem)
+     * Lấy danh sách tất cả hostel (public - cho mọi người xem, kể cả khách vãng lai)
      */
-    @PreAuthorize("hasRole('TENANT')")
     @GetMapping("/tenant/detailsHostel")
     public ApiResponse<List<HostelResponseDto>> getAllHostelsForTenant() {
         List<HostelResponseDto> hostels = hostelService.getAllHostelsForTenant();
         return ApiResponse.<List<HostelResponseDto>>builder()
                 .code(200)
                 .message("Lấy chi tiết danh sách tất cả nhà trọ thành công")
+                .result(hostels)
+                .build();
+    }
+
+    /**
+     * Owner lấy danh sách hostel của chính mình
+     */
+    @IsOwner
+    @GetMapping("/owner/my-hostels")
+    public ApiResponse<List<HostelResponseDto>> getMyHostels() {
+        List<HostelResponseDto> hostels = hostelService.getHostelsByOwner();
+        return ApiResponse.<List<HostelResponseDto>>builder()
+                .code(200)
+                .message("Lấy danh sách hostel của owner thành công")
                 .result(hostels)
                 .build();
     }
