@@ -32,6 +32,7 @@ public class HostelResponseDto {
     private Integer maxOccupancy;
     private List<String> imageUrls;
     private String description;
+    private String amenities;
     private BigDecimal elecUnitPrice;
     private BigDecimal waterUnitPrice;
     private LocalDateTime createdAt;

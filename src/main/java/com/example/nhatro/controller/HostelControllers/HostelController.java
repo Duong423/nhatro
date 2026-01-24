@@ -2,7 +2,9 @@ package com.example.nhatro.controller.HostelControllers;
 
 import com.example.nhatro.common.dto.response.ApiResponse;
 import com.example.nhatro.dto.response.HostelResponseDto;
+import com.example.nhatro.dto.response.UpdateHostelResponseDTO;
 import com.example.nhatro.service.HostelService;
+import com.mysql.cj.x.protobuf.MysqlxCrud.Update;
 
 import jakarta.validation.Valid;
 
@@ -15,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.nhatro.config.IsOwner;
 import com.example.nhatro.dto.request.HostelRequestDTO.HostelRequestDto;
+import com.example.nhatro.dto.request.HostelRequestDTO.UpdateHostelRequestDTO;
 
 @RestController
 @RequestMapping("/api/hostels")
@@ -57,6 +60,27 @@ public class HostelController {
     }
 
     /**
+     * Cập nhật ảnh cho hostel (xóa ảnh cũ và thêm ảnh mới)
+     */
+    @IsOwner
+    @PutMapping("/{hostelId}/images")
+    public ApiResponse<HostelResponseDto> updateHostelImages(
+            @PathVariable Long hostelId,
+            @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
+            @RequestParam(value = "keepImages", required = false) List<String> keepImages) {
+        try {
+            HostelResponseDto hostel = hostelService.updateHostelImages(hostelId, imageFiles, keepImages);
+            return ApiResponse.<HostelResponseDto>builder()
+                    .code(200)
+                    .message("Images updated successfully")
+                    .result(hostel)
+                    .build();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to update images: " + e.getMessage());
+        }
+    }
+
+    /**
      * Lấy danh sách tất cả hostel (cho tenant xem)
      */
     @PreAuthorize("hasRole('TENANT')")
@@ -81,5 +105,24 @@ public class HostelController {
                 .message("Lấy chi tiết hostel thành công")
                 .result(hostel)
                 .build();
+    }
+
+    /**
+     * Owner cập nhật thông tin hostel của mình
+     */
+    @PutMapping("/{hostelId}")
+    @IsOwner
+    public ApiResponse<UpdateHostelResponseDTO> updateHostel(@PathVariable Long hostelId ,@RequestBody  @Valid UpdateHostelRequestDTO hostelRequestDTO) {
+        try{
+             UpdateHostelResponseDTO updatedHostel = hostelService.updateHostel(hostelId, hostelRequestDTO);
+             return ApiResponse.<UpdateHostelResponseDTO>builder()
+                .code(200)
+                .message("Cập nhật hostel thành công")
+                .result(updatedHostel)
+                .build();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Cập nhật hostel thất bại: " + e.getMessage());
+        }
+       
     }
 }

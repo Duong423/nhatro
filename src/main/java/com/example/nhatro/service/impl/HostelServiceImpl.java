@@ -1,8 +1,10 @@
 package com.example.nhatro.service.impl;
 
 import com.example.nhatro.dto.request.HostelRequestDTO.HostelRequestDto;
+import com.example.nhatro.dto.request.HostelRequestDTO.UpdateHostelRequestDTO;
 import com.example.nhatro.dto.request.ServiceRequestDTO.ServiceInHostelDto;
 import com.example.nhatro.dto.response.HostelResponseDto;
+import com.example.nhatro.dto.response.UpdateHostelResponseDTO;
 import com.example.nhatro.entity.Hostel;
 import com.example.nhatro.entity.User;
 // (Removed import for entity Service to avoid name clash)
@@ -44,6 +46,9 @@ public class HostelServiceImpl implements HostelService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    /*
+        * Tạo hostel mới
+    */
     @Override
     @Transactional
     public HostelResponseDto addHostel(HostelRequestDto dto) {
@@ -68,6 +73,7 @@ public class HostelServiceImpl implements HostelService {
         hostel.setPrice(dto.getPrice());
         hostel.setArea(dto.getArea());
         hostel.setDescription(dto.getDescription());
+        hostel.setAmenities(dto.getAmenities());
         hostel.setRoomCount(dto.getRoomCount());
         hostel.setMaxOccupancy(dto.getMaxOccupancy());
         hostel.setRoomType(dto.getRoomType());
@@ -134,6 +140,77 @@ public class HostelServiceImpl implements HostelService {
         Hostel savedHostel = hostelRepository.save(hostel);
         return HostelMapper.toResponseDto(savedHostel);
     }
+
+    @Override
+    @Transactional
+    public HostelResponseDto updateHostelImages(Long hostelId, List<MultipartFile> imageFiles, List<String> keepImages) {
+        // Lấy hostel
+        Hostel hostel = hostelRepository.findById(hostelId)
+                .orElseThrow(() -> new RuntimeException("Hostel không tồn tại"));
+        
+        // Kiểm tra owner
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User owner = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+        
+        if (!hostel.getOwner().getId().equals(owner.getId())) {
+            throw new RuntimeException("Bạn không có quyền cập nhật ảnh cho hostel này");
+        }
+        
+        // Lấy danh sách ảnh hiện tại
+        String existingImagesStr = hostel.getImages();
+        List<String> currentImages = new ArrayList<>();
+        if (existingImagesStr != null && !existingImagesStr.isEmpty()) {
+            currentImages = List.of(existingImagesStr.split(","));
+        }
+        
+        // Xác định ảnh cần xóa (không nằm trong keepImages)
+        List<String> imagesToDelete = new ArrayList<>();
+        if (keepImages == null) {
+            keepImages = new ArrayList<>();
+        }
+        
+        for (String currentImage : currentImages) {
+            if (!keepImages.contains(currentImage.trim())) {
+                imagesToDelete.add(currentImage.trim());
+            }
+        }
+        
+        // Xóa ảnh trên cloud
+        for (String imageUrl : imagesToDelete) {
+            try {
+                cloudinaryService.deleteFile(imageUrl);
+            } catch (Exception e) {
+                System.err.println("Failed to delete image: " + imageUrl + " - " + e.getMessage());
+            }
+        }
+        
+        // Upload ảnh mới
+        List<String> newImageUrls = new ArrayList<>();
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            for (MultipartFile file : imageFiles) {
+                if (!file.isEmpty()) {
+                    String imageUrl = cloudinaryService.uploadFile(file);
+                    newImageUrls.add(imageUrl);
+                }
+            }
+        }
+        
+        // Gộp danh sách ảnh giữ lại + ảnh mới
+        List<String> finalImages = new ArrayList<>(keepImages);
+        finalImages.addAll(newImageUrls);
+        
+        // Lưu danh sách ảnh mới
+        if (finalImages.isEmpty()) {
+            hostel.setImages(null);
+        } else {
+            hostel.setImages(String.join(",", finalImages));
+        }
+        
+        Hostel savedHostel = hostelRepository.save(hostel);
+        return HostelMapper.toResponseDto(savedHostel);
+    }
      
 
     /**
@@ -159,5 +236,57 @@ public class HostelServiceImpl implements HostelService {
         Hostel hostel = hostelRepository.findByIdWithServices(hostelId)
                 .orElseThrow(() -> new RuntimeException("Hostel không tồn tại"));
         return HostelMapper.toResponseDto(hostel);
+    }
+
+    /*
+        * Cập nhật hostel
+    */
+    @Override
+    @Transactional
+    public UpdateHostelResponseDTO updateHostel(Long hostelId, UpdateHostelRequestDTO hostelRequestDTO) {
+        // Lấy hostel
+        Hostel hostel = hostelRepository.findById(hostelId)
+                .orElseThrow(() -> new RuntimeException("Hostel không tồn tại"));
+        
+        // Kiểm tra owner
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User owner = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+        
+        if (!hostel.getOwner().getId().equals(owner.getId())) {
+            throw new RuntimeException("Bạn không có quyền cập nhật hostel này");
+        }
+        
+        // Cập nhật thông tin hostel
+        hostel.setName(hostelRequestDTO.getName());
+        hostel.setAddress(hostelRequestDTO.getAddress());
+        hostel.setDistrict(hostelRequestDTO.getDistrict());
+        hostel.setCity(hostelRequestDTO.getCity());
+        hostel.setPrice(hostelRequestDTO.getPrice());
+        hostel.setArea(hostelRequestDTO.getArea());
+        hostel.setDescription(hostelRequestDTO.getDescription());
+        hostel.setAmenities(hostelRequestDTO.getAmenities());
+        hostel.setRoomCount(hostelRequestDTO.getRoomCount());
+        hostel.setMaxOccupancy(hostelRequestDTO.getMaxOccupancy());
+        hostel.setRoomType(hostelRequestDTO.getRoomType());
+        
+        Hostel updatedHostel = hostelRepository.save(hostel);
+        return new UpdateHostelResponseDTO(
+            updatedHostel.getHostelId(),
+            updatedHostel.getName(),
+            updatedHostel.getAddress(),
+            updatedHostel.getDescription(),
+            updatedHostel.getPrice(),
+            updatedHostel.getRoomCount(),
+            updatedHostel.getDistrict(),
+            updatedHostel.getCity(),
+            updatedHostel.getArea(),
+            updatedHostel.getRoomType(),
+            updatedHostel.getMaxOccupancy(),
+            updatedHostel.getAmenities(),
+            updatedHostel.getImages() != null ? List.of(updatedHostel.getImages().split(",")) : null
+        );
+        // return HostelMapper.toResponseDto(updatedHostel);
     }
 }

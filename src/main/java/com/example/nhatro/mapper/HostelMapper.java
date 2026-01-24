@@ -56,6 +56,7 @@ public class HostelMapper {
             .roomCount(hostel.getRoomCount())
             .maxOccupancy(hostel.getMaxOccupancy())
             .description(hostel.getDescription())
+            .amenities(hostel.getAmenities())
             .elecUnitPrice(hostel.getElecUnitPrice())
             .waterUnitPrice(hostel.getWaterUnitPrice())
             .createdAt(hostel.getCreatedAt())

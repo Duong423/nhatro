@@ -34,6 +34,8 @@ public class HostelRequestDto {
     @NotBlank(message = "Description is required")
     private String description;
 
+    private String amenities; 
+
     @Min(value = 1, message = "Room count must be at least 1")
     private int roomCount;
 

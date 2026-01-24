@@ -34,4 +34,44 @@ public class CloudinaryServiceImpl implements CloudinaryService {
             throw new RuntimeException("Failed to upload file to Cloudinary", e);
         }
     }
+
+    @Override
+    public void deleteFile(String imageUrl) {
+        try {
+            // Extract public_id from Cloudinary URL
+            // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}.{format}
+            String publicId = extractPublicIdFromUrl(imageUrl);
+            if (publicId != null && !publicId.isEmpty()) {
+                cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete file from Cloudinary", e);
+        }
+    }
+
+    private String extractPublicIdFromUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            return null;
+        }
+        try {
+            // Extract public_id from URL
+            // Example: https://res.cloudinary.com/demo/image/upload/v1234567890/sample.jpg
+            // public_id would be: sample
+            String[] parts = imageUrl.split("/upload/");
+            if (parts.length > 1) {
+                String pathAfterUpload = parts[1];
+                // Remove version if present (v1234567890/)
+                pathAfterUpload = pathAfterUpload.replaceFirst("v\\d+/", "");
+                // Remove file extension
+                int lastDot = pathAfterUpload.lastIndexOf('.');
+                if (lastDot > 0) {
+                    return pathAfterUpload.substring(0, lastDot);
+                }
+                return pathAfterUpload;
+            }
+        } catch (Exception e) {
+            System.err.println("Error extracting public_id from URL: " + imageUrl);
+        }
+        return null;
+    }
 }
