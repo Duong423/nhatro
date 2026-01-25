@@ -9,9 +9,14 @@ import com.example.nhatro.entity.Hostel;
 import java.util.List;
 
 public interface HostelService {
-    HostelResponseDto addHostel(HostelRequestDto hostelRequestDto);
+  
     
-    HostelResponseDto uploadHostelImages(Long hostelId, java.util.List<org.springframework.web.multipart.MultipartFile> imageFiles);
+    /**
+     * Tạo hostel mới với upload ảnh lên Cloudinary
+     */
+    HostelResponseDto addHostelWithImages(HostelRequestDto hostelRequestDto);
+    
+    
 
     HostelResponseDto updateHostelImages(Long hostelId, java.util.List<org.springframework.web.multipart.MultipartFile> imageFiles, java.util.List<String> keepImages);
 

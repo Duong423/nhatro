@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Upload Hostel với Ảnh</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 300px; padding: 8px; border: 1px solid #ddd; }
+        textarea { height: 80px; }
+        input[type="file"] { width: 320px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .response { margin-top: 20px; padding: 10px; border: 1px solid #ddd; background: #f9f9f9; }
+        .error { background: #ffebee; border-color: #f44336; }
+        .success { background: #e8f5e8; border-color: #4caf50; }
+    </style>
+</head>
+<body>
+    <h1>Test API Tạo Hostel với Upload Ảnh</h1>
+    
+    <form id="hostelForm">
+        <div class="form-group">
+            <label>JWT Token:</label>
+            <input type="text" id="token" placeholder="Bearer token...">
+        </div>
+        
+        <div class="form-group">
+            <label>Tên Hostel:</label>
+            <input type="text" id="title" required placeholder="Nhà trọ ABC">
+        </div>
+        
+        <div class="form-group">
+            <label>Địa chỉ:</label>
+            <input type="text" id="address" required placeholder="123 Đường XYZ">
+        </div>
+        
+        <div class="form-group">
+            <label>Quận/Huyện:</label>
+            <input type="text" id="district" required placeholder="Quận 1">
+        </div>
+        
+        <div class="form-group">
+            <label>Thành phố:</label>
+            <input type="text" id="city" required placeholder="TP.HCM">
+        </div>
+        
+        <div class="form-group">
+            <label>Giá thuê (VNĐ):</label>
+            <input type="number" id="price" required placeholder="5000000">
+        </div>
+        
+        <div class="form-group">
+            <label>Diện tích (m²):</label>
+            <input type="number" id="area" required placeholder="25">
+        </div>
+        
+        <div class="form-group">
+            <label>Mô tả:</label>
+            <textarea id="description" required placeholder="Phòng đẹp, thoáng mát..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Số phòng:</label>
+            <input type="number" id="roomCount" required placeholder="10">
+        </div>
+        
+        <div class="form-group">
+            <label>Số người tối đa:</label>
+            <input type="number" id="maxOccupancy" required placeholder="2">
+        </div>
+        
+        <div class="form-group">
+            <label>Loại phòng:</label>
+            <input type="text" id="roomType" required placeholder="Phòng đơn">
+        </div>
+        
+        <div class="form-group">
+            <label>Tiện ích:</label>
+            <input type="text" id="amenities" placeholder="Wifi, điều hòa, tủ lạnh">
+        </div>
+        
+        <div class="form-group">
+            <label>Chọn ảnh (nhiều file):</label>
+            <input type="file" id="imageFiles" multiple accept="image/*">
+        </div>
+        
+        <div class="form-group">
+            <label>Services JSON (optional):</label>
+            <textarea id="servicesJson" placeholder='[{"serviceId":1,"isIncluded":true,"additionalFee":0}]'></textarea>
+        </div>
+        
+        <button type="submit">Tạo Hostel</button>
+    </form>
+    
+    <div id="response" class="response" style="display:none;"></div>
+
+    <script>
+        document.getElementById('hostelForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const responseDiv = document.getElementById('response');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = 'Đang xử lý...';
+            responseDiv.className = 'response';
+            
+            try {
+                const formData = new FormData();
+                
+                // Thêm các trường dữ liệu
+                formData.append('title', document.getElementById('title').value);
+                formData.append('address', document.getElementById('address').value);
+                formData.append('district', document.getElementById('district').value);
+                formData.append('city', document.getElementById('city').value);
+                formData.append('price', document.getElementById('price').value);
+                formData.append('area', document.getElementById('area').value);
+                formData.append('description', document.getElementById('description').value);
+                formData.append('roomCount', document.getElementById('roomCount').value);
+                formData.append('maxOccupancy', document.getElementById('maxOccupancy').value);
+                formData.append('roomType', document.getElementById('roomType').value);
+                
+                const amenities = document.getElementById('amenities').value;
+                if (amenities) {
+                    formData.append('amenities', amenities);
+                }
+                
+                // Thêm files ảnh
+                const imageFiles = document.getElementById('imageFiles').files;
+                for (let i = 0; i < imageFiles.length; i++) {
+                    formData.append('imageFiles', imageFiles[i]);
+                }
+                
+                // Thêm services JSON
+                const servicesJson = document.getElementById('servicesJson').value;
+                if (servicesJson) {
+                    formData.append('servicesJson', servicesJson);
+                }
+                
+                // Gửi request
+                const headers = {};
+                const token = document.getElementById('token').value;
+                if (token) {
+                    headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+                }
+                
+                const response = await fetch('/api/hostels/test', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.innerHTML = `
+                        <h3>✅ Tạo hostel thành công!</h3>
+                        <p><strong>ID:</strong> ${result.result.id}</p>
+                        <p><strong>Tên:</strong> ${result.result.name}</p>
+                        <p><strong>Địa chỉ:</strong> ${result.result.address}</p>
+                        <p><strong>Ảnh:</strong> ${result.result.images ? result.result.images.split(',').length + ' ảnh' : 'Không có ảnh'}</p>
+                        <details>
+                            <summary>Chi tiết đầy đủ</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.innerHTML = `
+                        <h3>❌ Lỗi!</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Message:</strong> ${result.message || 'Unknown error'}</p>
+                        <details>
+                            <summary>Chi tiết lỗi</summary>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </details>
+                    `;
+                }
+                
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.innerHTML = `
+                    <h3>❌ Lỗi kết nối!</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

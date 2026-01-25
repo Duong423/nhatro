@@ -33,21 +33,12 @@ public class HostelResponseDto {
     private List<String> imageUrls;
     private String description;
     private String amenities;
-    private BigDecimal elecUnitPrice;
-    private BigDecimal waterUnitPrice;
+    private String elecUnitPrice;
+    private String waterUnitPrice;
+    private String wifiUnitPrice;
+    private String parkingUnitPrice;
+    private String trashUnitPrice;
     private LocalDateTime createdAt;
     
-    // Nested services
-    private List<ServiceInHostelResponseDto> services;
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ServiceInHostelResponseDto {
-        private Long serviceId;
-        private String serviceName;
-        private BigDecimal price;
-        private String unit;
-    }
+   
 }

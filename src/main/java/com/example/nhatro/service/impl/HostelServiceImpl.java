@@ -2,7 +2,6 @@ package com.example.nhatro.service.impl;
 
 import com.example.nhatro.dto.request.HostelRequestDTO.HostelRequestDto;
 import com.example.nhatro.dto.request.HostelRequestDTO.UpdateHostelRequestDTO;
-import com.example.nhatro.dto.request.ServiceRequestDTO.ServiceInHostelDto;
 import com.example.nhatro.dto.response.HostelResponseDto;
 import com.example.nhatro.dto.response.UpdateHostelResponseDTO;
 import com.example.nhatro.entity.Hostel;
@@ -37,19 +36,15 @@ public class HostelServiceImpl implements HostelService {
     @Autowired
     private CloudinaryService cloudinaryService;
     
-    @Autowired
-    private com.example.nhatro.service.ServiceService serviceService;
-    
+  
     
     @PersistenceContext
     private EntityManager entityManager;
 
-    /*
-        * Tạo hostel mới
-    */
+    
     @Override
     @Transactional
-    public HostelResponseDto addHostel(HostelRequestDto dto) {
+    public HostelResponseDto addHostelWithImages(HostelRequestDto dto) {
         // Get current authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
@@ -75,67 +70,38 @@ public class HostelServiceImpl implements HostelService {
         hostel.setRoomCount(dto.getRoomCount());
         hostel.setMaxOccupancy(dto.getMaxOccupancy());
         hostel.setRoomType(dto.getRoomType());
+        hostel.setElecUnitPrice(dto.getElecUnitPrice());
+        hostel.setWaterUnitPrice(dto.getWaterUnitPrice());
+        hostel.setWifiUnitPrice(dto.getWifiUnitPrice());
+        hostel.setParkingUnitPrice(dto.getParkingUnitPrice());
+        hostel.setTrashUnitPrice(dto.getTrashUnitPrice());
         
-        // Lưu hostel trước
-        Hostel savedHostel = hostelRepository.save(hostel);
-        
-        // Tạo services cho hostel 
-        if (dto.getServices() != null && !dto.getServices().isEmpty()) {
-            List<com.example.nhatro.entity.ServiceHostel> createdServices = new ArrayList<>();
-            for (ServiceInHostelDto serviceDto : dto.getServices()) {
-                try {
-                    com.example.nhatro.entity.ServiceHostel service = serviceService.createServiceForNewHostel(savedHostel, serviceDto);
-                    createdServices.add(service);
-                } catch (Exception e) {
-                    // Log error nhưng không throw để không ảnh hưởng việc tạo hostel
-                    System.err.println("Error creating service: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-            // Cập nhật list services vào object hostel để trả về response đúng
-            savedHostel.setServices(createdServices);
-        }
-        
-        return HostelMapper.toResponseDto(savedHostel);
-    }
-
-    @Override
-    public HostelResponseDto uploadHostelImages(Long hostelId, List<MultipartFile> imageFiles) {
-        // Lấy hostel
-        Hostel hostel = hostelRepository.findById(hostelId)
-                .orElseThrow(() -> new RuntimeException("Hostel không tồn tại"));
-        
-        // Kiểm tra owner
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
-        User owner = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("Owner not found"));
-        
-        if (!hostel.getOwner().getId().equals(owner.getId())) {
-            throw new RuntimeException("Bạn không có quyền upload ảnh cho hostel này");
-        }
-        
-        // Upload ảnh
+        // Upload images to Cloudinary
         List<String> imageUrls = new ArrayList<>();
-        if (imageFiles != null && !imageFiles.isEmpty()) {
-            for (MultipartFile file : imageFiles) {
+        if (dto.getImageFiles() != null && !dto.getImageFiles().isEmpty()) {
+            for (MultipartFile file : dto.getImageFiles()) {
                 if (!file.isEmpty()) {
-                    String imageUrl = cloudinaryService.uploadFile(file);
-                    imageUrls.add(imageUrl);
+                    try {
+                        String imageUrl = cloudinaryService.uploadFile(file);
+                        imageUrls.add(imageUrl);
+                    } catch (Exception e) {
+                        System.err.println("Failed to upload image: " + file.getOriginalFilename() + " - " + e.getMessage());
+                        // Continue ensuring other images might upload
+                    }
                 }
             }
         }
         
-        // Cập nhật ảnh cho hostel
+        // Join URLs with comma
         if (!imageUrls.isEmpty()) {
-            String existingImages = hostel.getImages();
-            if (existingImages != null && !existingImages.isEmpty()) {
-                imageUrls.add(0, existingImages);
-            }
             hostel.setImages(String.join(",", imageUrls));
         }
         
+        // Save hostel first to get ID
         Hostel savedHostel = hostelRepository.save(hostel);
+        
+        
+        
         return HostelMapper.toResponseDto(savedHostel);
     }
 
@@ -303,6 +269,11 @@ public class HostelServiceImpl implements HostelService {
             updatedHostel.getRoomType(),
             updatedHostel.getMaxOccupancy(),
             updatedHostel.getAmenities(),
+            updatedHostel.getElecUnitPrice(),
+            updatedHostel.getWaterUnitPrice(),
+            updatedHostel.getWifiUnitPrice(),
+            updatedHostel.getParkingUnitPrice(),
+            updatedHostel.getTrashUnitPrice(),
             updatedHostel.getImages() != null ? List.of(updatedHostel.getImages().split(",")) : null
         );
         // return HostelMapper.toResponseDto(updatedHostel);

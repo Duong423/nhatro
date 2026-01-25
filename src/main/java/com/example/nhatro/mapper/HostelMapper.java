@@ -2,7 +2,6 @@ package com.example.nhatro.mapper;
 
 import com.example.nhatro.dto.response.HostelResponseDto;
 import com.example.nhatro.entity.Hostel;
-import com.example.nhatro.entity.ServiceHostel;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,18 +24,7 @@ public class HostelMapper {
                 .collect(Collectors.toList());
         }
 
-        // Convert services to nested DTO
-        List<HostelResponseDto.ServiceInHostelResponseDto> serviceDtos = Collections.emptyList();
-        if (hostel.getServices() != null && !hostel.getServices().isEmpty()) {
-            serviceDtos = hostel.getServices().stream()
-                .map(service -> HostelResponseDto.ServiceInHostelResponseDto.builder()
-                    .serviceId(service.getServiceId())
-                    .serviceName(service.getServiceName())
-                    .price(service.getPrice())
-                    .unit(service.getUnit() != null ? service.getUnit().name() : null)
-                    .build())
-                .collect(Collectors.toList());
-        }
+    
 
         return HostelResponseDto.builder()
             .hostelId(hostel.getHostelId())
@@ -60,7 +48,6 @@ public class HostelMapper {
             .elecUnitPrice(hostel.getElecUnitPrice())
             .waterUnitPrice(hostel.getWaterUnitPrice())
             .createdAt(hostel.getCreatedAt())
-            .services(serviceDtos)
             .build();
     }
 }

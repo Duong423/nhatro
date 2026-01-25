@@ -22,6 +22,11 @@ public class UpdateHostelResponseDTO {
     private String roomType;
     private Integer maxOccupancy;
     private String amenities;
+    private String elecUnitPrice;
+    private String waterUnitPrice;
+    private String wifiUnitPrice;
+    private String parkingUnitPrice;
+    private String trashUnitPrice;
     private List<String> imageUrls;
 
 

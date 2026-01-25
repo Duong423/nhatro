@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface HostelRepository extends JpaRepository<Hostel, Long> {
     // You can add custom query methods here if needed
     
-    @Query("SELECT h FROM Hostel h LEFT JOIN FETCH h.services WHERE h.hostelId = :hostelId")
+    @Query("SELECT h FROM Hostel h WHERE h.hostelId = :hostelId")
     Optional<Hostel> findByIdWithServices(@Param("hostelId") Long hostelId);
     
     // Lấy danh sách hostel của một owner cụ thể

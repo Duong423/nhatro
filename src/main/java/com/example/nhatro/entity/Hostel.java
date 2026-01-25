@@ -63,15 +63,16 @@ public class Hostel extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private BigDecimal elecUnitPrice;
-    private BigDecimal waterUnitPrice;
-
+    private String elecUnitPrice;
+    private String waterUnitPrice;
+    private String wifiUnitPrice;
+    private String parkingUnitPrice;
+    private String trashUnitPrice;
+    
     @OneToMany(mappedBy = "hostel", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Room> rooms;
 
-    @OneToMany(mappedBy = "hostel", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<ServiceHostel> services;
+   
 
 }

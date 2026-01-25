@@ -25,37 +25,103 @@ public class HostelController {
     @Autowired
     private HostelService hostelService;
 
-    /**
-     * Tạo hostel mới với JSON (không upload ảnh)
-     */
-    @IsOwner
-    @PostMapping
-    public ApiResponse<HostelResponseDto> addHostel(@RequestBody @Valid HostelRequestDto hostelRequestDto) {
-        HostelResponseDto hostel = hostelService.addHostel(hostelRequestDto);
-        return ApiResponse.<HostelResponseDto>builder()
-                .code(201)
-                .message("Hostel added successfully")
-                .result(hostel)
-                .build();
-    }
+    @Autowired
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     /**
-     * Upload ảnh cho hostel đã tồn tại
+     * Endpoint tạo hostel kèm ảnh và dịch vụ (Manual Parsing for Stability)
      */
     @IsOwner
-    @PostMapping("/{hostelId}/images")
-    public ApiResponse<HostelResponseDto> uploadHostelImages(
-            @PathVariable Long hostelId,
-            @RequestParam("imageFiles") List<MultipartFile> imageFiles) {
+    @PostMapping("/create-with-images")
+    public ApiResponse<HostelResponseDto> createHostelWithImages(jakarta.servlet.http.HttpServletRequest request) {
         try {
-            HostelResponseDto hostel = hostelService.uploadHostelImages(hostelId, imageFiles);
-            return ApiResponse.<HostelResponseDto>builder()
-                    .code(200)
-                    .message("Images uploaded successfully")
-                    .result(hostel)
+            System.out.println("=== START CREATE HOSTEL REQUEST ===");
+            
+            // Check multipart
+            if (!(request instanceof org.springframework.web.multipart.MultipartHttpServletRequest)) {
+                System.out.println("ERROR: Request is not multipart");
+                return ApiResponse.<HostelResponseDto>builder()
+                    .code(400)
+                    .message("Request must be multipart/form-data")
+                    .result(null)
                     .build();
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Failed to upload images: " + e.getMessage());
+            }
+            
+            org.springframework.web.multipart.MultipartHttpServletRequest multipartRequest = 
+                (org.springframework.web.multipart.MultipartHttpServletRequest) request;
+            
+            // Log all parameters
+            System.out.println("=== ALL PARAMETERS ===");
+            multipartRequest.getParameterMap().forEach((key, values) -> {
+                System.out.println(key + " = " + String.join(", ", values));
+            });
+            System.out.println("======================");
+            
+            // Extract core fields
+            String title = multipartRequest.getParameter("title");
+            String address = multipartRequest.getParameter("address");
+            String priceStr = multipartRequest.getParameter("price");
+            String description = multipartRequest.getParameter("description");
+            
+            // Basic validation
+            if (title == null || address == null || priceStr == null) {
+                 return ApiResponse.<HostelResponseDto>builder()
+                    .code(400)
+                    .message("Missing required fields (title, address, price)")
+                    .result(null)
+                    .build();
+            }
+
+            HostelRequestDto dto = new HostelRequestDto();
+            dto.setTitle(title);
+            dto.setAddress(address);
+            dto.setPrice(Double.parseDouble(priceStr));
+            dto.setDescription(description);
+            
+            dto.setDistrict(multipartRequest.getParameter("district"));
+            dto.setCity(multipartRequest.getParameter("city"));
+            
+            String areaStr = multipartRequest.getParameter("area");
+            if (areaStr != null && !areaStr.isEmpty()) dto.setArea(Double.parseDouble(areaStr));
+            
+            String roomCountStr = multipartRequest.getParameter("roomCount");
+            if (roomCountStr != null && !roomCountStr.isEmpty()) dto.setRoomCount(Integer.parseInt(roomCountStr));
+            
+            String maxOccupancyStr = multipartRequest.getParameter("maxOccupancy");
+            if (maxOccupancyStr != null && !maxOccupancyStr.isEmpty()) dto.setMaxOccupancy(Integer.parseInt(maxOccupancyStr));
+            
+            dto.setRoomType(multipartRequest.getParameter("roomType"));
+            dto.setAmenities(multipartRequest.getParameter("amenities"));
+            
+            // Set unit prices
+            dto.setElecUnitPrice(multipartRequest.getParameter("elecUnitPrice"));
+            dto.setWaterUnitPrice(multipartRequest.getParameter("waterUnitPrice"));
+            dto.setWifiUnitPrice(multipartRequest.getParameter("wifiUnitPrice"));
+            dto.setParkingUnitPrice(multipartRequest.getParameter("parkingUnitPrice"));
+            dto.setTrashUnitPrice(multipartRequest.getParameter("trashUnitPrice"));
+            
+            dto.setImageFiles(multipartRequest.getFiles("imageFiles"));
+
+            System.out.println("DTO created successfully, calling service...");
+
+            HostelResponseDto result = hostelService.addHostelWithImages(dto);
+            
+            System.out.println("=== HOSTEL CREATED SUCCESSFULLY ===");
+            
+            return ApiResponse.<HostelResponseDto>builder()
+                    .code(201)
+                    .message("Hostel created successfully")
+                    .result(result)
+                    .build();
+
+        } catch (Exception e) {
+            System.err.println("=== ERROR IN CREATE HOSTEL ===");
+            e.printStackTrace();
+            return ApiResponse.<HostelResponseDto>builder()
+                    .code(400)
+                    .message("Error creating hostel: " + e.getMessage())
+                    .result(null)
+                    .build();
         }
     }
 
@@ -138,4 +204,6 @@ public class HostelController {
         }
        
     }
+
+    
 }
