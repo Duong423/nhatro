@@ -39,7 +39,6 @@ public class HostelController {
             
             // Check multipart
             if (!(request instanceof org.springframework.web.multipart.MultipartHttpServletRequest)) {
-                System.out.println("ERROR: Request is not multipart");
                 return ApiResponse.<HostelResponseDto>builder()
                     .code(400)
                     .message("Request must be multipart/form-data")
@@ -49,13 +48,7 @@ public class HostelController {
             
             org.springframework.web.multipart.MultipartHttpServletRequest multipartRequest = 
                 (org.springframework.web.multipart.MultipartHttpServletRequest) request;
-            
-            // Log all parameters
-            System.out.println("=== ALL PARAMETERS ===");
-            multipartRequest.getParameterMap().forEach((key, values) -> {
-                System.out.println(key + " = " + String.join(", ", values));
-            });
-            System.out.println("======================");
+
             
             // Extract core fields
             String title = multipartRequest.getParameter("title");
@@ -102,11 +95,8 @@ public class HostelController {
             
             dto.setImageFiles(multipartRequest.getFiles("imageFiles"));
 
-            System.out.println("DTO created successfully, calling service...");
-
             HostelResponseDto result = hostelService.addHostelWithImages(dto);
             
-            System.out.println("=== HOSTEL CREATED SUCCESSFULLY ===");
             
             return ApiResponse.<HostelResponseDto>builder()
                     .code(201)
@@ -115,7 +105,6 @@ public class HostelController {
                     .build();
 
         } catch (Exception e) {
-            System.err.println("=== ERROR IN CREATE HOSTEL ===");
             e.printStackTrace();
             return ApiResponse.<HostelResponseDto>builder()
                     .code(400)
