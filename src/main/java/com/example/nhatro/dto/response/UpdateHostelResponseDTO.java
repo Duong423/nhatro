@@ -15,19 +15,13 @@ public class UpdateHostelResponseDTO {
     private String address;
     private String description;
     private Double price;
-    private Integer roomCount;
-    private String district;
-    private String city;
-    private double area;
-    private String roomType;
-    private Integer maxOccupancy;
-    private String amenities;
-    private String elecUnitPrice;
-    private String waterUnitPrice;
-    private String wifiUnitPrice;
-    private String parkingUnitPrice;
-    private String trashUnitPrice;
-    private List<String> imageUrls;
+    private String contactPhone;
+    private String contactEmail;
+    private String contactName;
+    private Double area;
 
+    private String amenities;
+
+    private List<String> imageUrls;
 
 }

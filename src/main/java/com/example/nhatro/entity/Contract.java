@@ -33,10 +33,6 @@ public class Contract extends BaseEntity {
     private Long contractId;
 
     @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;
-
-    @ManyToOne
     @JoinColumn(name = "tenant_id")
     private Tenant tenant; // Người đại diện ký
 

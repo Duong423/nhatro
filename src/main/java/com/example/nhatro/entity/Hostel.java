@@ -44,14 +44,10 @@ public class Hostel extends BaseEntity {
     private String city;
     private Double price;
     private Double area;
-    private String roomType;
    
     private String contactName;
     private String contactPhone;
     private String contactEmail;
-   
-    private Integer roomCount;
-    private Integer maxOccupancy;
 
     // Store amenities and images as JSON or comma-separated string for simplicity
     @Column(columnDefinition = "TEXT")
@@ -63,16 +59,5 @@ public class Hostel extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private String elecUnitPrice;
-    private String waterUnitPrice;
-    private String wifiUnitPrice;
-    private String parkingUnitPrice;
-    private String trashUnitPrice;
-    
-    @OneToMany(mappedBy = "hostel", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<Room> rooms;
-
-   
 
 }

@@ -14,10 +14,6 @@ public class MaintenanceRequest extends BaseEntity {
     private Long requestId;
 
     @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;
-
-    @ManyToOne
     @JoinColumn(name = "tenant_id")
     private Tenant tenant; // Ai báo?
 

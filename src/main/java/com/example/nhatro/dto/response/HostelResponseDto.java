@@ -20,24 +20,16 @@ public class HostelResponseDto {
     private String ownerName;
     private String name;
     private String address;
-    private String district;
-    private String city;
+    // private String district;
+    // private String city;
     private Double price;
     private Double area;
-    private String roomType;
     private String contactName;
     private String contactPhone;
     private String contactEmail;
-    private Integer roomCount;
-    private Integer maxOccupancy;
     private List<String> imageUrls;
     private String description;
     private String amenities;
-    private String elecUnitPrice;
-    private String waterUnitPrice;
-    private String wifiUnitPrice;
-    private String parkingUnitPrice;
-    private String trashUnitPrice;
     private LocalDateTime createdAt;
     
    

@@ -27,5 +27,7 @@ public interface HostelService {
     HostelResponseDto getHostelById(Long hostelId);
 
     UpdateHostelResponseDTO updateHostel(Long hostelId, UpdateHostelRequestDTO updateHostelRequestDTO);
+
+    void deleteHostel(Long hostelId);
 }
 

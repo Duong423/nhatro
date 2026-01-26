@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -42,6 +43,10 @@ public class HostelServiceImpl implements HostelService {
     private EntityManager entityManager;
 
     
+
+    /** 
+     * Tạo hostel mới
+     */
     @Override
     @Transactional
     public HostelResponseDto addHostelWithImages(HostelRequestDto dto) {
@@ -61,20 +66,13 @@ public class HostelServiceImpl implements HostelService {
 
         hostel.setName(dto.getTitle());
         hostel.setAddress(dto.getAddress());
-        hostel.setDistrict(dto.getDistrict());
-        hostel.setCity(dto.getCity());
+        // hostel.setDistrict(dto.getDistrict());
+        // hostel.setCity(dto.getCity());
         hostel.setPrice(dto.getPrice());
         hostel.setArea(dto.getArea());
         hostel.setDescription(dto.getDescription());
         hostel.setAmenities(dto.getAmenities());
-        hostel.setRoomCount(dto.getRoomCount());
-        hostel.setMaxOccupancy(dto.getMaxOccupancy());
-        hostel.setRoomType(dto.getRoomType());
-        hostel.setElecUnitPrice(dto.getElecUnitPrice());
-        hostel.setWaterUnitPrice(dto.getWaterUnitPrice());
-        hostel.setWifiUnitPrice(dto.getWifiUnitPrice());
-        hostel.setParkingUnitPrice(dto.getParkingUnitPrice());
-        hostel.setTrashUnitPrice(dto.getTrashUnitPrice());
+
         
         // Upload images to Cloudinary
         List<String> imageUrls = new ArrayList<>();
@@ -92,7 +90,7 @@ public class HostelServiceImpl implements HostelService {
             }
         }
         
-        // Join URLs with comma
+        // set image
         if (!imageUrls.isEmpty()) {
             hostel.setImages(String.join(",", imageUrls));
         }
@@ -105,6 +103,12 @@ public class HostelServiceImpl implements HostelService {
         return HostelMapper.toResponseDto(savedHostel);
     }
 
+
+
+
+    /**
+     * Cập nhật ảnh cho hostel (xóa ảnh cũ và thêm ảnh mới)
+     */
     @Override
     @Transactional
     public HostelResponseDto updateHostelImages(Long hostelId, List<MultipartFile> imageFiles, List<String> keepImages) {
@@ -223,7 +227,7 @@ public class HostelServiceImpl implements HostelService {
     }
 
     /*
-        * Cập nhật hostel
+     * Cập nhật hostel
     */
     @Override
     @Transactional
@@ -242,40 +246,81 @@ public class HostelServiceImpl implements HostelService {
             throw new RuntimeException("Bạn không có quyền cập nhật hostel này");
         }
         
-        // Cập nhật thông tin hostel
-        hostel.setName(hostelRequestDTO.getName());
-        hostel.setAddress(hostelRequestDTO.getAddress());
-        hostel.setDistrict(hostelRequestDTO.getDistrict());
-        hostel.setCity(hostelRequestDTO.getCity());
-        hostel.setPrice(hostelRequestDTO.getPrice());
-        hostel.setArea(hostelRequestDTO.getArea());
-        hostel.setDescription(hostelRequestDTO.getDescription());
-        hostel.setAmenities(hostelRequestDTO.getAmenities());
-        hostel.setRoomCount(hostelRequestDTO.getRoomCount());
-        hostel.setMaxOccupancy(hostelRequestDTO.getMaxOccupancy());
-        hostel.setRoomType(hostelRequestDTO.getRoomType());
+        // Cập nhật thông tin hostel - chỉ update các field không null
+        if (hostelRequestDTO.getName() != null) {
+            hostel.setName(hostelRequestDTO.getName());
+        }
+        if (hostelRequestDTO.getAddress() != null) {
+            hostel.setAddress(hostelRequestDTO.getAddress());
+        }
+        if (hostelRequestDTO.getContactPhone() != null) {
+            hostel.setContactPhone(hostelRequestDTO.getContactPhone());
+        }
+        if (hostelRequestDTO.getContactEmail() != null) {
+            hostel.setContactEmail(hostelRequestDTO.getContactEmail());
+        }
+        if (hostelRequestDTO.getContactName() != null) {
+            hostel.setContactName(hostelRequestDTO.getContactName());
+        }
+        if (hostelRequestDTO.getPrice() != null) {
+            hostel.setPrice(hostelRequestDTO.getPrice());
+        }
+        if (hostelRequestDTO.getArea() != null) {
+            hostel.setArea(hostelRequestDTO.getArea());
+        }
+        if (hostelRequestDTO.getDescription() != null) {
+            hostel.setDescription(hostelRequestDTO.getDescription());
+        }
+        if (hostelRequestDTO.getAmenities() != null) {
+            hostel.setAmenities(hostelRequestDTO.getAmenities());
+        }
+        if (hostelRequestDTO.getImages() != null && !hostelRequestDTO.getImages().isEmpty()) {
+            hostel.setImages(String.join(",", hostelRequestDTO.getImages()));
+        }
         
         Hostel updatedHostel = hostelRepository.save(hostel);
+        
+        // Convert images string to list
+        List<String> imageList = updatedHostel.getImages() != null && !updatedHostel.getImages().isEmpty() 
+            ? Arrays.asList(updatedHostel.getImages().split(","))
+            : new ArrayList<>();
+        
         return new UpdateHostelResponseDTO(
             updatedHostel.getHostelId(),
             updatedHostel.getName(),
             updatedHostel.getAddress(),
             updatedHostel.getDescription(),
             updatedHostel.getPrice(),
-            updatedHostel.getRoomCount(),
-            updatedHostel.getDistrict(),
-            updatedHostel.getCity(),
+            updatedHostel.getContactPhone(),
+            updatedHostel.getContactEmail(),
+            updatedHostel.getContactName(),
             updatedHostel.getArea(),
-            updatedHostel.getRoomType(),
-            updatedHostel.getMaxOccupancy(),
             updatedHostel.getAmenities(),
-            updatedHostel.getElecUnitPrice(),
-            updatedHostel.getWaterUnitPrice(),
-            updatedHostel.getWifiUnitPrice(),
-            updatedHostel.getParkingUnitPrice(),
-            updatedHostel.getTrashUnitPrice(),
-            updatedHostel.getImages() != null ? List.of(updatedHostel.getImages().split(",")) : null
+            imageList
         );
         // return HostelMapper.toResponseDto(updatedHostel);
+    }
+
+
+    /**
+     * Xóa hostel
+     */
+    @Override
+    @Transactional
+    public void deleteHostel(Long hostelId) {
+        Hostel hostel = hostelRepository.findById(hostelId)
+                .orElseThrow(() -> new RuntimeException("Hostel không tồn tại"));
+
+        // Kiểm tra owner
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        User owner = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+        if (!hostel.getOwner().getId().equals(owner.getId())) {
+            throw new RuntimeException("Bạn không có quyền xóa hostel này");
+        }
+
+        hostelRepository.delete(hostel);
     }
 }

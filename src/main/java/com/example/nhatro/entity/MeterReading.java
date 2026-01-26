@@ -13,9 +13,6 @@ public class MeterReading extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long readingId;
 
-    @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;
 
     private LocalDate recordDate; // Ngày ghi
     
