@@ -16,6 +16,7 @@ import com.example.nhatro.service.HostelService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.math.BigDecimal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -70,6 +71,7 @@ public class HostelServiceImpl implements HostelService {
         // hostel.setCity(dto.getCity());
         hostel.setPrice(dto.getPrice());
         hostel.setArea(dto.getArea());
+        hostel.setDepositAmount(BigDecimal.valueOf(dto.getDepositAmount())); // Tiền cọc
         hostel.setDescription(dto.getDescription());
         hostel.setAmenities(dto.getAmenities());
 
@@ -268,6 +270,9 @@ public class HostelServiceImpl implements HostelService {
         if (hostelRequestDTO.getArea() != null) {
             hostel.setArea(hostelRequestDTO.getArea());
         }
+        if (hostelRequestDTO.getDepositAmount() != null) {
+            hostel.setDepositAmount(BigDecimal.valueOf(hostelRequestDTO.getDepositAmount()));
+        }
         if (hostelRequestDTO.getDescription() != null) {
             hostel.setDescription(hostelRequestDTO.getDescription());
         }
@@ -295,6 +300,7 @@ public class HostelServiceImpl implements HostelService {
             updatedHostel.getContactEmail(),
             updatedHostel.getContactName(),
             updatedHostel.getArea(),
+            updatedHostel.getDepositAmount(),
             updatedHostel.getAmenities(),
             imageList
         );

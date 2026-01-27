@@ -36,6 +36,8 @@ public class HostelMapper {
             // .city(hostel.getCity())
             .price(hostel.getPrice())
             .area(hostel.getArea())
+            .depositAmount(hostel.getDepositAmount())
+            .status(hostel.getStatus() != null ? hostel.getStatus().name() : null)
             .contactName(hostel.getContactName())
             .contactPhone(hostel.getContactPhone())
             .contactEmail(hostel.getContactEmail())

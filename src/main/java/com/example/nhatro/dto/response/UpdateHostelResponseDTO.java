@@ -1,5 +1,6 @@
 package com.example.nhatro.dto.response;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ public class UpdateHostelResponseDTO {
     private String contactEmail;
     private String contactName;
     private Double area;
+    private BigDecimal depositAmount;
 
     private String amenities;
 

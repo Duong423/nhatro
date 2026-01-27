@@ -1,5 +1,6 @@
 package com.example.nhatro.dto.request.HostelRequestDTO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import lombok.Data;
@@ -24,6 +25,8 @@ public class HostelRequestDto {
     private Double price;
 
     private Double area;
+    
+    private Double depositAmount; // Tiền cọc
 
     @NotBlank(message = "Description is required")
     private String description;

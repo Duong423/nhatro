@@ -24,6 +24,8 @@ public class HostelResponseDto {
     // private String city;
     private Double price;
     private Double area;
+    private BigDecimal depositAmount; // Tiền cọc
+    private String status; // Trạng thái hostel
     private String contactName;
     private String contactPhone;
     private String contactEmail;

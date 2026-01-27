@@ -1,5 +1,6 @@
 package com.example.nhatro.dto.request.HostelRequestDTO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,7 @@ public class UpdateHostelRequestDTO {
     private String contactEmail;
     private String contactName;
     private Double area;
+    private Double depositAmount;
     private String amenities;
 
 
