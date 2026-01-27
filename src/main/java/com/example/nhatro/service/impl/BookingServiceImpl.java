@@ -11,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.nhatro.dto.request.BookingRequestDTO;
+import com.example.nhatro.dto.request.BookingRequestDTO.BookingRequestDTO;
 import com.example.nhatro.dto.response.BookingResponseDTO;
 import com.example.nhatro.dto.response.PaymentResponseDTO;
 import com.example.nhatro.entity.Booking;
@@ -108,7 +108,7 @@ public class BookingServiceImpl implements BookingService {
         payment = paymentRepository.save(payment);
         
         // 4. Cập nhật booking status thành CONFIRMED
-        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setStatus(BookingStatus.PENDING);
         booking = bookingRepository.save(booking);
         
         // 5. Cập nhật hostel status thành FULL
@@ -119,6 +119,10 @@ public class BookingServiceImpl implements BookingService {
         return mapToBookingResponse(booking, payment);
     }
 
+
+    /**
+     * Lấy danh sách booking của user hiện tại
+     */
     @Override
     public List<BookingResponseDTO> getMyBookings() {
         User currentUser = getCurrentUser();
@@ -149,6 +153,43 @@ public class BookingServiceImpl implements BookingService {
         return mapToBookingResponse(booking, payment);
     }
 
+
+     /**
+     * Xác nhận trạng thái booking (chỉ owner được phép)
+      */
+    @Override
+    @Transactional
+    public BookingResponseDTO confirmBooking(Long bookingId, String newStatus) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
+    
+        
+        // Kiểm tra quyền (chỉ owner mới xác nhận được)
+        User currentUser = getCurrentUser();
+        if (!booking.getHostel().getOwner().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("You don't have permission to confirm this booking");
+        }
+        
+        // Cập nhật trạng thái booking
+        BookingStatus status;
+        try {
+            status = BookingStatus.valueOf(newStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid booking status: " + newStatus);
+        }
+        
+        booking.setStatus(status);
+        booking = bookingRepository.save(booking);
+        
+        Payment payment = paymentRepository.findByBookingBookingId(bookingId).orElse(null);
+        return mapToBookingResponse(booking, payment);
+    }
+    
+
+
+    /**
+     * Hủy booking chỉ user đặt phòng được phép
+     */
     @Override
     @Transactional
     public BookingResponseDTO cancelBooking(Long bookingId) {
@@ -180,29 +221,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingResponseDTO getBookingByHostel(Long hostelId) {
-        // Kiểm tra hostel tồn tại
-        Hostel hostel = hostelRepository.findById(hostelId)
-                .orElseThrow(() -> new RuntimeException("Hostel not found with ID: " + hostelId));
-        
-        // Kiểm tra quyền (chỉ owner mới xem được)
-        User currentUser = getCurrentUser();
-        if (!hostel.getOwner().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You don't have permission to view booking for this hostel");
-        }
-        
-        Booking booking = bookingRepository.findByHostelHostelId(hostelId);
-        
-        if (booking == null) {
-            throw new RuntimeException("No booking found for this hostel");
-        }
-        
-        Payment payment = paymentRepository.findByBookingBookingId(booking.getBookingId())
-                .orElse(null);
-        return mapToBookingResponse(booking, payment);
-    }
-
-    @Override
     public List<BookingResponseDTO> getAllBookingsForOwner() {
         User currentUser = getCurrentUser();
         
@@ -222,6 +240,39 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookings = bookingRepository.findByHostelHostelIdIn(hostelIds);
         
         return bookings.stream()
+                .map(booking -> {
+                    Payment payment = paymentRepository.findByBookingBookingId(booking.getBookingId())
+                            .orElse(null);
+                    return mapToBookingResponse(booking, payment);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BookingResponseDTO> searchBookingsByPhone(String customerPhone) {
+        User currentUser = getCurrentUser();
+        
+        // Lấy tất cả hostels của owner
+        List<Hostel> hostels = hostelRepository.findByOwnerId(currentUser.getId());
+        
+        if (hostels.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // Lấy danh sách hostel IDs
+        List<Long> hostelIds = hostels.stream()
+                .map(Hostel::getHostelId)
+                .collect(Collectors.toList());
+        
+        // Tìm tất cả bookings theo số điện thoại
+        List<Booking> allBookings = bookingRepository.findByCustomerPhoneContaining(customerPhone);
+        
+        // Lọc chỉ những booking thuộc hostels của owner hiện tại
+        List<Booking> ownerBookings = allBookings.stream()
+                .filter(booking -> hostelIds.contains(booking.getHostel().getHostelId()))
+                .collect(Collectors.toList());
+        
+        return ownerBookings.stream()
                 .map(booking -> {
                     Payment payment = paymentRepository.findByBookingBookingId(booking.getBookingId())
                             .orElse(null);

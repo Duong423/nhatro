@@ -1,4 +1,4 @@
-package com.example.nhatro.dto.request;
+package com.example.nhatro.dto.request.BookingRequestDTO;
 
 import java.time.LocalDateTime;
 

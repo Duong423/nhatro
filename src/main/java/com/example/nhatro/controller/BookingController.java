@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.nhatro.common.dto.response.ApiResponse;
 import com.example.nhatro.config.IsAuthenticated;
 import com.example.nhatro.config.IsOwner;
-import com.example.nhatro.dto.request.BookingRequestDTO;
+import com.example.nhatro.dto.request.BookingRequestDTO.BookingRequestDTO;
+import com.example.nhatro.dto.request.BookingRequestDTO.BookingUpdateRequestDTO;
 import com.example.nhatro.dto.response.BookingResponseDTO;
 import com.example.nhatro.service.BookingService;
 
@@ -122,31 +124,6 @@ public class BookingController {
                     .build();
         }
     }
-
-    /**
-     * Owner lấy booking theo hostel
-     * API: GET /api/bookings/hostel/{hostelId}
-     */
-    @IsOwner
-    
-    @GetMapping("/hostel/{hostelId}")
-    public ApiResponse<BookingResponseDTO> getBookingByHostel(@PathVariable Long hostelId) {
-        try {
-            BookingResponseDTO booking = bookingService.getBookingByHostel(hostelId);
-            return ApiResponse.<BookingResponseDTO>builder()
-                    .code(200)
-                    .message("Retrieved booking for hostel successfully")
-                    .result(booking)
-                    .build();
-        } catch (RuntimeException e) {
-            return ApiResponse.<BookingResponseDTO>builder()
-                    .code(400)
-                    .message("Error retrieving booking: " + e.getMessage())
-                    .result(null)
-                    .build();
-        }
-    }
-    
     /**
      * OWNER    
      * Owner lấy danh sách tất cả bookings của tất cả hostels
@@ -166,6 +143,54 @@ public class BookingController {
             return ApiResponse.<List<BookingResponseDTO>>builder()
                     .code(400)
                     .message("Error retrieving bookings: " + e.getMessage())
+                    .result(null)
+                    .build();
+        }
+    }
+
+
+    /**
+     * xác nhận booking (OWNER)
+     * API: PUT /api/bookings/confirm-booking/{bookingId}
+     */
+    @IsOwner
+    @PutMapping("/confirm-booking/{bookingId}")
+    public ApiResponse<BookingResponseDTO> confirmBooking(@PathVariable Long bookingId, @RequestBody @Valid BookingUpdateRequestDTO request) {
+        try {
+            BookingResponseDTO booking = bookingService.confirmBooking(bookingId, request.getStatus());
+            return ApiResponse.<BookingResponseDTO>builder()
+                    .code(200)
+                    .message("Booking confirmed successfully")
+                    .result(booking)
+                    .build();
+        } catch (RuntimeException e) {
+            return ApiResponse.<BookingResponseDTO>builder()
+                    .code(400)
+                    .message("Error confirming booking: " + e.getMessage())
+                    .result(null)
+                    .build();
+        }
+    }
+
+    /**
+     * OWNER
+     * Tìm kiếm booking theo số điện thoại khách hàng
+     * API: GET /api/bookings/owner/search?phone=0123456789
+     */
+    @IsOwner
+    @GetMapping("/owner/search")
+    public ApiResponse<List<BookingResponseDTO>> searchBookingsByPhone(@RequestParam String phone) {
+        try {
+            List<BookingResponseDTO> bookings = bookingService.searchBookingsByPhone(phone);
+            return ApiResponse.<List<BookingResponseDTO>>builder()
+                    .code(200)
+                    .message("Search completed successfully")
+                    .result(bookings)
+                    .build();
+        } catch (RuntimeException e) {
+            return ApiResponse.<List<BookingResponseDTO>>builder()
+                    .code(400)
+                    .message("Error searching bookings: " + e.getMessage())
                     .result(null)
                     .build();
         }

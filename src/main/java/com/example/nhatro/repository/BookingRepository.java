@@ -20,9 +20,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     // Tìm tất cả bookings theo danh sách hostel IDs
     List<Booking> findByHostelHostelIdIn(List<Long> hostelIds);
     
-    // Tìm booking theo status
-    List<Booking> findByStatus(BookingStatus status);
     
     // Tìm booking theo customer và status
     List<Booking> findByCustomerIdAndStatus(Long customerId, BookingStatus status);
+    
+    // Tìm booking theo số điện thoại khách hàng
+    List<Booking> findByCustomerPhone(String customerPhone);
+    
+    // Tìm booking theo số điện thoại khách hàng (chứa số điện thoại)
+    List<Booking> findByCustomerPhoneContaining(String customerPhone);
 }

@@ -2,7 +2,7 @@ package com.example.nhatro.service;
 
 import java.util.List;
 
-import com.example.nhatro.dto.request.BookingRequestDTO;
+import com.example.nhatro.dto.request.BookingRequestDTO.BookingRequestDTO;
 import com.example.nhatro.dto.response.BookingResponseDTO;
 
 public interface BookingService {
@@ -34,16 +34,19 @@ public interface BookingService {
      */
     BookingResponseDTO cancelBooking(Long bookingId);
     
-    /**
-     * Lấy booking theo hostel (cho owner)
-     * @param hostelId ID của hostel
-     * @return thông tin booking
-     */
-    BookingResponseDTO getBookingByHostel(Long hostelId);
     
     /**
      * Lấy tất cả bookings của owner (tất cả hostels của owner)
      * @return danh sách tất cả booking
      */
     List<BookingResponseDTO> getAllBookingsForOwner();
+
+    BookingResponseDTO confirmBooking(Long bookingId, String newStatus);
+    
+    /**
+     * Tìm kiếm booking theo số điện thoại khách hàng (cho owner)
+     * @param customerPhone số điện thoại khách hàng
+     * @return danh sách booking
+     */
+    List<BookingResponseDTO> searchBookingsByPhone(String customerPhone);
 }
