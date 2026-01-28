@@ -55,8 +55,11 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingResponseDTO createBookingWithPayment(BookingRequestDTO request) {
-        // Lấy user hiện tại
+        // Lấy user hiện tại (bắt buộc phải đăng nhập)
         User currentUser = getCurrentUser();
+        if (currentUser == null) {
+            throw new RuntimeException("Authentication required to create booking");
+        }
         
         // 1. Kiểm tra hostel
         Hostel hostel = hostelRepository.findById(request.getHostelId())
@@ -89,9 +92,14 @@ public class BookingServiceImpl implements BookingService {
         booking.setDepositAmount(hostel.getDepositAmount());
         booking.setStatus(BookingStatus.PENDING);
         booking.setNotes(request.getNotes());
-        booking.setCustomerName(request.getCustomerName());
-        booking.setCustomerPhone(request.getCustomerPhone());
-        booking.setCustomerEmail(request.getCustomerEmail());
+        
+        // Lấy thông tin khách hàng: ưu tiên từ request, nếu null thì lấy từ currentUser
+        booking.setCustomerName(request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty() 
+                ? request.getCustomerName() : currentUser.getFullName());
+        booking.setCustomerPhone(request.getCustomerPhone() != null && !request.getCustomerPhone().trim().isEmpty() 
+                ? request.getCustomerPhone() : currentUser.getPhone());
+        booking.setCustomerEmail(request.getCustomerEmail() != null && !request.getCustomerEmail().trim().isEmpty() 
+                ? request.getCustomerEmail() : currentUser.getEmail());
         
         booking = bookingRepository.save(booking);
         
@@ -144,9 +152,13 @@ public class BookingServiceImpl implements BookingService {
         
         // Kiểm tra quyền truy cập
         User currentUser = getCurrentUser();
-        if (!booking.getCustomer().getId().equals(currentUser.getId()) 
-                && !booking.getHostel().getOwner().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You don't have permission to access this booking");
+        if (currentUser != null) {
+            boolean isCustomer = booking.getCustomer() != null && booking.getCustomer().getId().equals(currentUser.getId());
+            boolean isOwner = booking.getHostel().getOwner().getId().equals(currentUser.getId());
+            
+            if (!isCustomer && !isOwner) {
+                throw new RuntimeException("You don't have permission to access this booking");
+            }
         }
         
         Payment payment = paymentRepository.findByBookingBookingId(bookingId).orElse(null);
@@ -188,7 +200,7 @@ public class BookingServiceImpl implements BookingService {
 
 
     /**
-     * Hủy booking chỉ user đặt phòng được phép
+     * Hủy booking - Khách hàng hoặc Owner có thể hủy
      */
     @Override
     @Transactional
@@ -196,9 +208,17 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingId));
         
-        // Kiểm tra quyền
+        // Kiểm tra quyền: Khách hàng đã đặt hoặc Owner của hostel mới được hủy
         User currentUser = getCurrentUser();
-        if (!booking.getCustomer().getId().equals(currentUser.getId())) {
+        if (currentUser == null) {
+            throw new RuntimeException("Authentication required to cancel booking");
+        }
+        
+        boolean isCustomer = booking.getCustomer() != null && booking.getCustomer().getId().equals(currentUser.getId());
+        boolean isOwner = booking.getHostel().getOwner().getId().equals(currentUser.getId());
+        boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
+        
+        if (!isCustomer && !isOwner && !isAdmin) {
             throw new RuntimeException("You don't have permission to cancel this booking");
         }
         
@@ -306,7 +326,7 @@ public class BookingServiceImpl implements BookingService {
         
         return BookingResponseDTO.builder()
                 .bookingId(booking.getBookingId())
-                .customerId(booking.getCustomer().getId())
+                .customerId(booking.getCustomer() != null ? booking.getCustomer().getId() : null)
                 .customerName(booking.getCustomerName())
                 .customerPhone(booking.getCustomerPhone())
                 .customerEmail(booking.getCustomerEmail())

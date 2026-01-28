@@ -17,15 +17,12 @@ public class HostelResponseDto {
     
     private Long hostelId;
     private Long ownerId;
-    private String ownerName;
     private String name;
     private String address;
-    // private String district;
-    // private String city;
     private Double price;
     private Double area;
-    private BigDecimal depositAmount; // Tiền cọc
-    private String status; // Trạng thái hostel
+    private BigDecimal depositAmount; 
+    private String status;
     private String contactName;
     private String contactPhone;
     private String contactEmail;

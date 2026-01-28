@@ -1,5 +1,8 @@
 package com.example.nhatro.enums;
 
 public enum ContractStatus {
-    ACTIVE, EXPIRED, TERMINATED // da chấm dứt
+    PENDING,     // Chờ ký
+    ACTIVE,      // Đang hoạt động
+    EXPIRED,     // Hết hạn
+    TERMINATED   // Đã chấm dứt
 }

@@ -22,12 +22,13 @@ public class BookingRequestDTO {
     @Future(message = "Check-in date must be in the future")
     private LocalDateTime checkInDate;
     
-    @NotBlank(message = "Customer name is required")
+    // Optional: nếu không nhập sẽ lấy từ token của user đang login
     private String customerName;
     
-    @NotBlank(message = "Customer phone is required")
+    // Optional: nếu không nhập sẽ lấy từ token của user đang login
     private String customerPhone;
     
+    // Optional: nếu không nhập sẽ lấy từ token của user đang login
     @Email(message = "Invalid email format")
     private String customerEmail;
     

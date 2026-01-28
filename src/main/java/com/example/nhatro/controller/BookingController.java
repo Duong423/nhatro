@@ -33,6 +33,7 @@ public class BookingController {
      * Tạo booking mới và thanh toán tiền cọc
      * API: POST /api/bookings/create
      * Body: BookingRequestDTO (hostelId, checkInDate, customerName, customerPhone, customerEmail, paymentMethod)
+     * Yêu cầu đăng nhập
      */
     @IsAuthenticated
     @PostMapping("/create")
@@ -106,7 +107,7 @@ public class BookingController {
      * Hủy booking
      * API: PUT /api/bookings/{bookingId}/cancel
      */
-    @IsAuthenticated
+    @IsOwner
     @PutMapping("/{bookingId}/cancel")
     public ApiResponse<BookingResponseDTO> cancelBooking(@PathVariable Long bookingId) {
         try {

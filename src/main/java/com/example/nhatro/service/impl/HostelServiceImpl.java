@@ -71,7 +71,11 @@ public class HostelServiceImpl implements HostelService {
         // hostel.setCity(dto.getCity());
         hostel.setPrice(dto.getPrice());
         hostel.setArea(dto.getArea());
-        hostel.setDepositAmount(BigDecimal.valueOf(dto.getDepositAmount())); // Tiền cọc
+        // Validate and set depositAmount - required field
+        if (dto.getDepositAmount() == null || dto.getDepositAmount() <= 0) {
+            throw new RuntimeException("Deposit amount is required and must be greater than 0");
+        }
+        hostel.setDepositAmount(BigDecimal.valueOf(dto.getDepositAmount()));
         hostel.setDescription(dto.getDescription());
         hostel.setAmenities(dto.getAmenities());
 

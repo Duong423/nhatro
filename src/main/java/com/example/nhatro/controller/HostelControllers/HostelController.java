@@ -71,6 +71,19 @@ public class HostelController {
             if (areaStr != null && !areaStr.isEmpty())
                 dto.setArea(Double.parseDouble(areaStr));
 
+            String depositAmountStr = multipartRequest.getParameter("depositAmount");
+            if (depositAmountStr != null && !depositAmountStr.isEmpty()) {
+                Double depositAmount = Double.parseDouble(depositAmountStr);
+                if (depositAmount > 99999999.99) {
+                    return ApiResponse.<HostelResponseDto>builder()
+                            .code(400)
+                            .message("Deposit amount must not exceed 99,999,999.99")
+                            .result(null)
+                            .build();
+                }
+                dto.setDepositAmount(depositAmount);
+            }
+
             dto.setAmenities(multipartRequest.getParameter("amenities"));
 
             dto.setImageFiles(multipartRequest.getFiles("imageFiles"));
