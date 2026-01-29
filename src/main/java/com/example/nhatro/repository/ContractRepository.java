@@ -19,7 +19,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     List<Contract> findByTenantId(Long tenantId);
     
     // Tìm tất cả hợp đồng của một landlord (owner)
-    List<Contract> findByLandlordId(Long landlordId);
+    List<Contract> findByOwnerId(Long ownerId);
     
     // Tìm tất cả hợp đồng của một hostel
     List<Contract> findByHostelHostelId(Long hostelId);

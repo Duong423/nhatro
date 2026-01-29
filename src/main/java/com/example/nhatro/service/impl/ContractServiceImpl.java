@@ -86,7 +86,12 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = new Contract();
         contract.setBooking(booking);
         contract.setTenant(booking.getCustomer()); // Khách thuê là customer trong booking
-        contract.setLandlord(booking.getHostel().getOwner()); // Chủ nhà là owner của hostel
+        contract.setTenantName(request.getTenantName()); // Lấy tên từ request
+        contract.setTenantPhone(request.getPhoneNumberTenant()); // Lấy SĐT từ request
+        contract.setTenantEmail(request.getTenantEmail()); // Lấy email từ request
+        contract.setOwner(booking.getHostel().getOwner()); // Chủ nhà là owner của hostel
+        contract.setOwnerName(request.getOwnerName()); // Lấy tên từ request
+        contract.setOwnerPhone(request.getPhoneNumberOwner()); // Lấy SĐT từ request
         contract.setHostel(booking.getHostel());
         contract.setStartDate(request.getStartDate());
         contract.setEndDate(request.getEndDate());
@@ -123,7 +128,7 @@ public class ContractServiceImpl implements ContractService {
         // Kiểm tra quyền: chỉ tenant hoặc landlord mới xem được
         User currentUser = getCurrentUser();
         if (!contract.getTenant().getId().equals(currentUser.getId()) && 
-            !contract.getLandlord().getId().equals(currentUser.getId())) {
+            !contract.getOwner().getId().equals(currentUser.getId())) {
             throw new RuntimeException("You don't have permission to view this contract");
         }
         
@@ -149,9 +154,9 @@ public class ContractServiceImpl implements ContractService {
     }
 
     @Override
-    public List<ContractResponseDTO> getContractsByLandlord() {
+    public List<ContractResponseDTO> getContractsByOwner() {
         User currentUser = getCurrentUser();
-        List<Contract> contracts = contractRepository.findByLandlordId(currentUser.getId());
+        List<Contract> contracts = contractRepository.findByOwnerId(currentUser.getId());
         
         return contracts.stream()
                 .map(this::mapToContractResponse)
@@ -172,7 +177,7 @@ public class ContractServiceImpl implements ContractService {
         // Kiểm tra quyền: chỉ tenant hoặc landlord mới ký được
         User currentUser = getCurrentUser();
         if (!contract.getTenant().getId().equals(currentUser.getId()) && 
-            !contract.getLandlord().getId().equals(currentUser.getId())) {
+            !contract.getOwner().getId().equals(currentUser.getId())) {
             throw new RuntimeException("You don't have permission to sign this contract");
         }
         
@@ -200,10 +205,10 @@ public class ContractServiceImpl implements ContractService {
             throw new RuntimeException("Contract is already terminated");
         }
         
-        // Kiểm tra quyền: chỉ landlord mới chấm dứt được
+        // Kiểm tra quyền: chỉ owner mới chấm dứt được
         User currentUser = getCurrentUser();
-        if (!contract.getLandlord().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("Only landlord can terminate contract");
+        if (!contract.getOwner().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("Only owner can terminate contract");
         }
         
         // Chấm dứt hợp đồng
@@ -226,10 +231,10 @@ public class ContractServiceImpl implements ContractService {
         Contract contract = contractRepository.findById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found with ID: " + contractId));
         
-        // Chỉ cho phép landlord cập nhật
+        // Chỉ cho phép owner cập nhật
         User currentUser = getCurrentUser();
-        if (!contract.getLandlord().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("Only landlord can update contract");
+        if (!contract.getOwner().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("Only owner can update contract");
         }
         
         // Không cho phép cập nhật hợp đồng đã TERMINATED
@@ -243,6 +248,11 @@ public class ContractServiceImpl implements ContractService {
         }
         
         // Cập nhật thông tin
+        contract.setTenantName(request.getTenantName());
+        contract.setTenantEmail(request.getTenantEmail());
+        contract.setTenantPhone(request.getPhoneNumberTenant());
+        contract.setOwnerName(request.getOwnerName());
+        contract.setOwnerPhone(request.getPhoneNumberOwner());
         contract.setStartDate(request.getStartDate());
         contract.setEndDate(request.getEndDate());
         contract.setMonthlyRent(BigDecimal.valueOf(request.getMonthlyRent()));
@@ -278,12 +288,12 @@ public class ContractServiceImpl implements ContractService {
                 .contractId(contract.getContractId())
                 .bookingId(booking.getBookingId())
                 .tenantId(contract.getTenant().getId())
-                .tenantName(booking.getCustomerName())
-                .tenantPhone(booking.getCustomerPhone())
-                .tenantEmail(booking.getCustomerEmail())
-                .landlordId(contract.getLandlord().getId())
-                .landlordName(contract.getLandlord().getFullName())
-                .landlordPhone(contract.getLandlord().getPhone())
+                .tenantName(contract.getTenantName())
+                .phoneNumberTenant(contract.getTenantPhone())
+                .tenantEmail(contract.getTenantEmail())
+                .ownerId(contract.getOwner().getId())
+                .ownerName(contract.getOwnerName())
+                .phoneNumberOwner(contract.getOwnerPhone())
                 .hostelId(contract.getHostel().getHostelId())
                 .hostelName(contract.getHostel().getName())
                 .hostelAddress(contract.getHostel().getAddress())

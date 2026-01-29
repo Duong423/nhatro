@@ -134,7 +134,7 @@ public class ContractController {
     @GetMapping("/owner/all")
     public ApiResponse<List<ContractResponseDTO>> getOwnerContracts() {
         try {
-            List<ContractResponseDTO> contracts = contractService.getContractsByLandlord();
+            List<ContractResponseDTO> contracts = contractService.getContractsByOwner();
             return ApiResponse.<List<ContractResponseDTO>>builder()
                     .code(200)
                     .message("Contracts retrieved successfully")

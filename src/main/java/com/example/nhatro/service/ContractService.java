@@ -31,7 +31,7 @@ public interface ContractService {
     /**
      * Lấy danh sách hợp đồng của landlord (chủ nhà)
      */
-    List<ContractResponseDTO> getContractsByLandlord();
+    List<ContractResponseDTO> getContractsByOwner();
     
     /**
      * Ký hợp đồng (chuyển từ PENDING sang ACTIVE)

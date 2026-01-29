@@ -40,9 +40,24 @@ public class Contract extends BaseEntity {
     @JoinColumn(name = "tenant_id", nullable = false)
     private User tenant; // Người thuê (customer)
 
+    @Column(length = 100, nullable = false)
+    private String tenantName; // Tên người thuê
+
+    @Column(length = 20, nullable = false)
+    private String tenantPhone; // Số điện thoại người thuê
+
+    @Column(length = 100)
+    private String tenantEmail; // Email người thuê
+
     @ManyToOne
-    @JoinColumn(name = "landlord_id", nullable = false)
-    private User landlord; // Chủ nhà (owner)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner; // Chủ nhà (owner)
+
+    @Column(length = 100, nullable = false)
+    private String ownerName; // Tên chủ nhà
+
+    @Column(length = 20, nullable = false)
+    private String ownerPhone; // Số điện thoại chủ nhà
 
     @ManyToOne
     @JoinColumn(name = "hostel_id", nullable = false)
