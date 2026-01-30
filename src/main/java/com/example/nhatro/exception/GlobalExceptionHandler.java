@@ -56,6 +56,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
+    @ExceptionHandler(com.example.nhatro.exception.ResourceNotFoundException.class)
+    public ResponseEntity<com.example.nhatro.common.dto.response.ApiResponse<Object>> handleResourceNotFound(com.example.nhatro.exception.ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(com.example.nhatro.common.dto.response.ApiResponse.error(404, ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.example.nhatro.exception.PermissionDeniedException.class)
+    public ResponseEntity<com.example.nhatro.common.dto.response.ApiResponse<Object>> handlePermissionDenied(com.example.nhatro.exception.PermissionDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(com.example.nhatro.common.dto.response.ApiResponse.forbidden(ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
         Map<String, Object> response = new HashMap<>();

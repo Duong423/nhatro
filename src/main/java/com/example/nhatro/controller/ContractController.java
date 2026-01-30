@@ -29,6 +29,9 @@ public class ContractController {
     @Autowired
     private ContractService contractService;
 
+    @Autowired
+    private com.example.nhatro.util.ContractPdfGenerator contractPdfGenerator;
+
     /**
      * OWNER
      * Tạo hợp đồng từ booking đã được confirmed
@@ -74,6 +77,30 @@ public class ContractController {
                     .message("Error retrieving contract: " + e.getMessage())
                     .result(null)
                     .build();
+        }
+    }
+
+    /**
+     * AUTHENTICATED - TENANT & LANDLORD
+     * Xuất PDF thông tin hợp đồng
+     * API: GET /api/contracts/{contractId}/pdf
+     */
+    @IsAuthenticated
+    @GetMapping("/{contractId}/pdf")
+    public org.springframework.http.ResponseEntity<?> getContractPdf(@PathVariable Long contractId) {
+        try {
+            ContractResponseDTO contract = contractService.getContractById(contractId);
+            byte[] pdf = contractPdfGenerator.generateContractPdf(contract);
+
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(org.springframework.http.ContentDisposition
+                    .attachment().filename("contract_" + contractId + ".pdf").build());
+
+            return new org.springframework.http.ResponseEntity<>(pdf, headers, org.springframework.http.HttpStatus.OK);
+        } catch (java.io.IOException e) {
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(com.example.nhatro.common.dto.response.ApiResponse.internalServerError("PDF generation failed"));
         }
     }
 

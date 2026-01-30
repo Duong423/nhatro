@@ -123,13 +123,13 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public ContractResponseDTO getContractById(Long contractId) {
         Contract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new RuntimeException("Contract not found with ID: " + contractId));
+                .orElseThrow(() -> new com.example.nhatro.exception.ResourceNotFoundException("Contract not found with ID: " + contractId));
         
         // Kiểm tra quyền: chỉ tenant hoặc landlord mới xem được
         User currentUser = getCurrentUser();
         if (!contract.getTenant().getId().equals(currentUser.getId()) && 
             !contract.getOwner().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You don't have permission to view this contract");
+            throw new com.example.nhatro.exception.PermissionDeniedException("You don't have permission to view this contract");
         }
         
         return mapToContractResponse(contract);
@@ -138,7 +138,7 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public ContractResponseDTO getContractByBookingId(Long bookingId) {
         Contract contract = contractRepository.findByBookingBookingId(bookingId)
-                .orElseThrow(() -> new RuntimeException("Contract not found for booking ID: " + bookingId));
+                .orElseThrow(() -> new com.example.nhatro.exception.ResourceNotFoundException("Contract not found for booking ID: " + bookingId));
         
         return mapToContractResponse(contract);
     }
