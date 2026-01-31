@@ -333,6 +333,7 @@ public class BookingServiceImpl implements BookingService {
                 .hostelId(booking.getHostel().getHostelId())
                 .hostelName(booking.getHostel().getName())
                 .hostelAddress(booking.getHostel().getAddress())
+                .roomCode(booking.getHostel().getRoomCode())
                 .bookingDate(booking.getBookingDate())
                 .checkInDate(booking.getCheckInDate())
                 .depositAmount(booking.getDepositAmount())

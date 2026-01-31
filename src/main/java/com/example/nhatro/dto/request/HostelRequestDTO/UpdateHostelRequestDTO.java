@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class UpdateHostelRequestDTO {
     private String name;
     private String address;
+    private String roomCode;
     private String description;
     private Double price;
     private String contactPhone;

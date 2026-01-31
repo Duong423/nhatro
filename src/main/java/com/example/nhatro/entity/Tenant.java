@@ -27,8 +27,14 @@ public class Tenant extends BaseEntity {
    (name = "user_id", referencedColumnName = "id", unique = true) //referencedColumnName la khoa chinh cua bang User
    private User user;
 
+   @jakarta.persistence.Column(name = "name", length = 100)
+   private String name;
+
    private String cccd;
    private String hometown;
    private String phone;
+
+   @jakarta.persistence.Column(name = "email", length = 100)
+   private String email;
     
 }

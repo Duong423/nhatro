@@ -15,6 +15,7 @@ public class HostelRequestDto {
 
     @NotBlank(message = "Address is required")
     private String address;
+    private String roomCode;
 
     // private String district;
 

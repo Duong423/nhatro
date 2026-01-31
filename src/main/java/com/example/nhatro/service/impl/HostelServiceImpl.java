@@ -67,6 +67,9 @@ public class HostelServiceImpl implements HostelService {
 
         hostel.setName(dto.getTitle());
         hostel.setAddress(dto.getAddress());
+        if (dto.getRoomCode() != null) {
+            hostel.setRoomCode(dto.getRoomCode());
+        }
         // hostel.setDistrict(dto.getDistrict());
         // hostel.setCity(dto.getCity());
         hostel.setPrice(dto.getPrice());
@@ -259,6 +262,9 @@ public class HostelServiceImpl implements HostelService {
         if (hostelRequestDTO.getAddress() != null) {
             hostel.setAddress(hostelRequestDTO.getAddress());
         }
+        if (hostelRequestDTO.getRoomCode() != null) {
+            hostel.setRoomCode(hostelRequestDTO.getRoomCode());
+        }
         if (hostelRequestDTO.getContactPhone() != null) {
             hostel.setContactPhone(hostelRequestDTO.getContactPhone());
         }
@@ -298,6 +304,7 @@ public class HostelServiceImpl implements HostelService {
             updatedHostel.getHostelId(),
             updatedHostel.getName(),
             updatedHostel.getAddress(),
+            updatedHostel.getRoomCode(),
             updatedHostel.getDescription(),
             updatedHostel.getPrice(),
             updatedHostel.getContactPhone(),

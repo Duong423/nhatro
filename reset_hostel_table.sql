@@ -11,6 +11,7 @@ CREATE TABLE hostel (
     hostel_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     address VARCHAR(255) NOT NULL,
+    room_code VARCHAR(255),
     district VARCHAR(100) NOT NULL,
     city VARCHAR(100) NOT NULL,
     price DOUBLE NOT NULL,

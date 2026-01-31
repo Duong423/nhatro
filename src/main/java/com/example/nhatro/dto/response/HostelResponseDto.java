@@ -19,6 +19,7 @@ public class HostelResponseDto {
     private Long ownerId;
     private String name;
     private String address;
+    private String roomCode;
     private Double price;
     private Double area;
     private BigDecimal depositAmount; 

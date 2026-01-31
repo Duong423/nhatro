@@ -23,6 +23,7 @@ public class BookingResponseDTO {
     private Long hostelId;
     private String hostelName;
     private String hostelAddress;
+    private String roomCode;
     
     private LocalDateTime bookingDate;
     private LocalDateTime checkInDate;

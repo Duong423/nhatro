@@ -26,6 +26,9 @@ public class UpdateContractRequestDTO {
     @Pattern(regexp = "^\\d{10}$", message = "Số điện thoại phải đủ 10 chữ số")
     private String phoneNumberTenant;
 
+    // CCCD của tenant (có thể cập nhật khi owner chỉnh sửa hợp đồng)
+    private String cccd;
+
     @NotNull(message = "Start date is required")
     private LocalDate startDate;
 

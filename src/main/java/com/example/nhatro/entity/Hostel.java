@@ -50,6 +50,8 @@ public class Hostel extends BaseEntity {
     private String contactName;
     private String contactPhone;
     private String contactEmail;
+    @Column(name = "room_code")
+    private String roomCode;
 
     // Store amenities and images as JSON or comma-separated string for simplicity
     @Column(columnDefinition = "TEXT")

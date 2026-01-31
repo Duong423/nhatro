@@ -31,6 +31,7 @@ public class HostelMapper {
             .ownerId(hostel.getOwner() != null ? hostel.getOwner().getId() : null)
             .name(hostel.getName())
             .address(hostel.getAddress())
+            .roomCode(hostel.getRoomCode())
             .price(hostel.getPrice())
             .area(hostel.getArea())
             .depositAmount(hostel.getDepositAmount())

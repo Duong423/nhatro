@@ -22,6 +22,7 @@ public class ContractResponseDTO {
     private String tenantName;
     private String phoneNumberTenant;
     private String tenantEmail;
+    private String cccd;
 
     private Long ownerId;
     private String ownerName;
@@ -30,6 +31,7 @@ public class ContractResponseDTO {
     private Long hostelId;
     private String hostelName;
     private String hostelAddress;
+    private String hostelRoomCode;
     private Double hostelPrice;
     private Double hostelArea;
     private String hostelAmenities;
@@ -51,5 +53,9 @@ public class ContractResponseDTO {
     private String status;
     
     private String notes;
+
+    private Long vehicleId;
+    private String vehicleLicensePlates;
+
     private LocalDateTime createdAt;
 }

@@ -14,6 +14,7 @@ public class UpdateHostelResponseDTO {
     private Long hostelId;
     private String name;
     private String address;
+    private String roomCode;
     private String description;
     private Double price;
     private String contactPhone;

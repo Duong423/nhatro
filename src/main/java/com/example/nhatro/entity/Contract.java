@@ -38,30 +38,23 @@ public class Contract extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "tenant_id", nullable = false)
-    private User tenant; // Người thuê (customer)
+    private Tenant tenant; // Người thuê (tham chiếu đến bảng tenants)
 
-    @Column(length = 100, nullable = false)
-    private String tenantName; // Tên người thuê
-
-    @Column(length = 20, nullable = false)
-    private String tenantPhone; // Số điện thoại người thuê
-
-    @Column(length = 100)
-    private String tenantEmail; // Email người thuê
+    // Thông tin cụ thể của tenant được lưu trong bảng tenants (tenant.name, tenant.phone, tenant.email)
 
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
-    private User owner; // Chủ nhà (owner)
+    private Owner owner; // Chủ nhà (tham chiếu đến bảng owners)
 
-    @Column(length = 100, nullable = false)
-    private String ownerName; // Tên chủ nhà
-
-    @Column(length = 20, nullable = false)
-    private String ownerPhone; // Số điện thoại chủ nhà
+    // Thông tin cụ thể của owner được lưu trong bảng owners (owner.name, owner.phone, owner.email, owner.cccd)
 
     @ManyToOne
     @JoinColumn(name = "hostel_id", nullable = false)
     private Hostel hostel; // Nhà trọ
+
+    @OneToOne
+    @JoinColumn(name = "vehicle_id")
+    private Vehicle vehicle; // Phương tiện (tham chiếu đến bảng vehicles)
 
     @Column(nullable = false)
     private LocalDate startDate; // Ngày bắt đầu hợp đồng

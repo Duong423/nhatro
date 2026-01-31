@@ -40,6 +40,9 @@ public class ContractRequestDTO {
     @Pattern(regexp = "^\\d{10}$", message = "Số điện thoại phải đủ 10 chữ số")
     private String phoneNumberTenant;
 
+    @NotNull(message = "CCCD is required")
+    private String cccd;
+
     @NotNull(message = "Start date is required")
     private LocalDate startDate;
     
