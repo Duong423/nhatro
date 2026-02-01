@@ -1,7 +1,11 @@
 package com.example.nhatro.entity;
 
+import com.example.nhatro.enums.VehicleStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,4 +33,8 @@ public class Vehicle extends BaseEntity {
 
     @Column(name = "license_plates", columnDefinition = "TEXT")
     private String licensePlates; // Có thể lưu nhiều biển xe trong 1 field, phân tách bằng dấu phẩy
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private VehicleStatus status = VehicleStatus.ACTIVE; // Mặc định là ACTIVE
 }

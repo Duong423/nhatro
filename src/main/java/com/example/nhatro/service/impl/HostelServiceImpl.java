@@ -68,6 +68,14 @@ public class HostelServiceImpl implements HostelService {
         hostel.setName(dto.getTitle());
         hostel.setAddress(dto.getAddress());
         if (dto.getRoomCode() != null) {
+            // Kiểm tra roomCode đã tồn tại cho owner này chưa
+            List<Hostel> existingHostels = hostelRepository.findByOwnerId(owner.getId());
+            boolean roomCodeExists = existingHostels.stream()
+                    .anyMatch(h -> dto.getRoomCode().equals(h.getRoomCode()));
+            if (roomCodeExists) {
+                throw new RuntimeException("Room code '" + dto.getRoomCode() + 
+                        "' already exists for this owner. Please use a different room code.");
+            }
             hostel.setRoomCode(dto.getRoomCode());
         }
         // hostel.setDistrict(dto.getDistrict());
@@ -263,6 +271,15 @@ public class HostelServiceImpl implements HostelService {
             hostel.setAddress(hostelRequestDTO.getAddress());
         }
         if (hostelRequestDTO.getRoomCode() != null) {
+            // Kiểm tra roomCode mới đã tồn tại cho owner này chưa (trừ hostel hiện tại)
+            List<Hostel> existingHostels = hostelRepository.findByOwnerId(owner.getId());
+            boolean roomCodeExists = existingHostels.stream()
+                    .filter(h -> !h.getHostelId().equals(hostelId)) // Loại trừ hostel hiện tại
+                    .anyMatch(h -> hostelRequestDTO.getRoomCode().equals(h.getRoomCode()));
+            if (roomCodeExists) {
+                throw new RuntimeException("Room code '" + hostelRequestDTO.getRoomCode() + 
+                        "' already exists for this owner. Please use a different room code.");
+            }
             hostel.setRoomCode(hostelRequestDTO.getRoomCode());
         }
         if (hostelRequestDTO.getContactPhone() != null) {

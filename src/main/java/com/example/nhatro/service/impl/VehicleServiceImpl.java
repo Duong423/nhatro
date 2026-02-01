@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,10 +13,14 @@ import com.example.nhatro.dto.request.VehicleRequestDTO.CreateVehicleRequestDTO;
 import com.example.nhatro.dto.request.VehicleRequestDTO.UpdateVehicleRequestDTO;
 import com.example.nhatro.dto.response.VehicleResponseDTO;
 import com.example.nhatro.entity.Contract;
+import com.example.nhatro.entity.Owner;
+import com.example.nhatro.entity.User;
 import com.example.nhatro.entity.Vehicle;
 import com.example.nhatro.enums.ContractStatus;
 import com.example.nhatro.exception.ResourceNotFoundException;
 import com.example.nhatro.repository.ContractRepository;
+import com.example.nhatro.repository.OwnerRepository;
+import com.example.nhatro.repository.UserRepository;
 import com.example.nhatro.repository.VehicleRepository;
 import com.example.nhatro.service.VehicleService;
 
@@ -26,17 +32,25 @@ public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final ContractRepository contractRepository;
+    private final UserRepository userRepository;
+    private final OwnerRepository ownerRepository;
 
     @Override
     @Transactional
     public VehicleResponseDTO createVehicle(CreateVehicleRequestDTO request) {
+        Long ownerId = getCurrentOwnerId();
         Contract contract = null;
         if (request.getContractId() != null) {
             contract = contractRepository.findById(request.getContractId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Contract not found with ID: " + request.getContractId()));
+            // Verify contract belongs to current owner
+            if (!contract.getHostel().getOwner().getId().equals(ownerId)) {
+                throw new ResourceNotFoundException("Contract not found with ID: " + request.getContractId());
+            }
         } else if (request.getRoomCode() != null) {
-            contract = contractRepository.findByHostel_RoomCodeAndStatus(request.getRoomCode(), ContractStatus.ACTIVE)
+            contract = contractRepository.findByHostel_RoomCodeAndHostel_Owner_IdAndStatus(
+                    request.getRoomCode(), ownerId, ContractStatus.ACTIVE)
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Active contract not found for room code: " + request.getRoomCode()));
         } else {
@@ -71,7 +85,9 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleResponseDTO getVehicleByRoomCode(String roomCode) {
-        Contract contract = contractRepository.findByHostel_RoomCodeAndStatus(roomCode, ContractStatus.ACTIVE)
+        Long ownerId = getCurrentOwnerId();
+        Contract contract = contractRepository.findByHostel_RoomCodeAndHostel_Owner_IdAndStatus(
+                roomCode, ownerId, ContractStatus.ACTIVE)
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Active contract not found for room code: " + roomCode));
         Vehicle v = contract.getVehicle();
@@ -98,14 +114,20 @@ public class VehicleServiceImpl implements VehicleService {
         }
 
         if (request.getContractId() != null || request.getRoomCode() != null) {
+            Long ownerId = getCurrentOwnerId();
             Contract targetContract;
             if (request.getContractId() != null) {
                 targetContract = contractRepository.findById(request.getContractId())
                         .orElseThrow(() -> new ResourceNotFoundException(
                                 "Contract not found with ID: " + request.getContractId()));
+                // Verify contract belongs to current owner
+                if (!targetContract.getHostel().getOwner().getId().equals(ownerId)) {
+                    throw new ResourceNotFoundException("Contract not found with ID: " + request.getContractId());
+                }
             } else {
                 targetContract = contractRepository
-                        .findByHostel_RoomCodeAndStatus(request.getRoomCode(), ContractStatus.ACTIVE)
+                        .findByHostel_RoomCodeAndHostel_Owner_IdAndStatus(
+                                request.getRoomCode(), ownerId, ContractStatus.ACTIVE)
                         .orElseThrow(() -> new ResourceNotFoundException(
                                 "Active contract not found for room code: " + request.getRoomCode()));
             }
@@ -148,6 +170,16 @@ public class VehicleServiceImpl implements VehicleService {
         vehicleRepository.delete(vehicle);
     }
 
+    private Long getCurrentOwnerId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Owner owner = ownerRepository.findByUser_Id(user.getId())
+                .orElseThrow(() -> new RuntimeException("Current user is not an owner"));
+        return owner.getOwnerId();
+    }
+
     private VehicleResponseDTO mapToDto(Vehicle v) {
         VehicleResponseDTO dto = new VehicleResponseDTO();
         dto.setVehicleId(v.getVehicleId());
@@ -163,6 +195,7 @@ public class VehicleServiceImpl implements VehicleService {
                         : null);
 
         dto.setLicensePlates(v.getLicensePlates());
+        dto.setStatus(v.getStatus() != null ? v.getStatus().name() : null);
         dto.setCreatedAt(v.getCreatedAt());
         dto.setUpdatedAt(v.getUpdatedAt());
         return dto;

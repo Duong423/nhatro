@@ -70,6 +70,10 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Hostel is already full");
         }
         
+        if (hostel.getStatus() == HostelStatus.RESERVED) {
+            throw new RuntimeException("Hostel is reserved by another customer");
+        }
+        
         if (hostel.getStatus() == HostelStatus.CLOSED) {
             throw new RuntimeException("Hostel is closed");
         }
@@ -115,12 +119,12 @@ public class BookingServiceImpl implements BookingService {
         
         payment = paymentRepository.save(payment);
         
-        // 4. Cập nhật booking status thành CONFIRMED
-        booking.setStatus(BookingStatus.PENDING);
+        // 4. Giữ booking ở trạng thái PENDING (chờ owner xác nhận)
+        // booking.setStatus đã được set là PENDING ở bước 2
         booking = bookingRepository.save(booking);
         
-        // 5. Cập nhật hostel status thành FULL
-        hostel.setStatus(HostelStatus.FULL);
+        // 5. Cập nhật hostel status thành RESERVED (giữ chỗ)
+        hostel.setStatus(HostelStatus.RESERVED);
         hostelRepository.save(hostel);
         
         // 6. Trả về response
@@ -193,6 +197,13 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(status);
         booking = bookingRepository.save(booking);
         
+        // Nếu owner confirm booking (status = CONFIRMED), cập nhật hostel thành FULL
+        if (status == BookingStatus.CONFIRMED) {
+            Hostel hostel = booking.getHostel();
+            hostel.setStatus(HostelStatus.FULL);
+            hostelRepository.save(hostel);
+        }
+        
         Payment payment = paymentRepository.findByBookingBookingId(bookingId).orElse(null);
         return mapToBookingResponse(booking, payment);
     }
@@ -231,10 +242,12 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.CANCELLED);
         booking = bookingRepository.save(booking);
         
-        // Cập nhật lại hostel status về AVAILABLE
+        // Cập nhật lại hostel status về AVAILABLE (từ RESERVED hoặc FULL)
         Hostel hostel = booking.getHostel();
-        hostel.setStatus(HostelStatus.AVAILABLE);
-        hostelRepository.save(hostel);
+        if (hostel.getStatus() == HostelStatus.RESERVED || hostel.getStatus() == HostelStatus.FULL) {
+            hostel.setStatus(HostelStatus.AVAILABLE);
+            hostelRepository.save(hostel);
+        }
         
         Payment payment = paymentRepository.findByBookingBookingId(bookingId).orElse(null);
         return mapToBookingResponse(booking, payment);

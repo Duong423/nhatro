@@ -87,7 +87,7 @@ public class HostelController {
             dto.setAmenities(multipartRequest.getParameter("amenities"));
 
             dto.setImageFiles(multipartRequest.getFiles("imageFiles"));
-
+            dto.setRoomCode(multipartRequest.getParameter("roomCode"));
             HostelResponseDto result = hostelService.addHostelWithImages(dto);
 
             return ApiResponse.<HostelResponseDto>builder()

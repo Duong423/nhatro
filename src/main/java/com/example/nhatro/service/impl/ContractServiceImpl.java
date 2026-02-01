@@ -3,6 +3,7 @@ package com.example.nhatro.service.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,17 +15,21 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.nhatro.dto.request.ContractRequestDTO.ContractRequestDTO;
 import com.example.nhatro.dto.request.ContractRequestDTO.UpdateContractRequestDTO;
 import com.example.nhatro.dto.response.ContractResponseDTO;
+import com.example.nhatro.dto.response.VehicleResponseDTO;
 import com.example.nhatro.entity.Booking;
 import com.example.nhatro.entity.Contract;
 import com.example.nhatro.entity.Hostel;
 import com.example.nhatro.entity.User;
+import com.example.nhatro.entity.Vehicle;
 import com.example.nhatro.enums.BookingStatus;
 import com.example.nhatro.enums.ContractStatus;
 import com.example.nhatro.enums.HostelStatus;
+import com.example.nhatro.enums.VehicleStatus;
 import com.example.nhatro.repository.BookingRepository;
 import com.example.nhatro.repository.ContractRepository;
 import com.example.nhatro.repository.HostelRepository;
 import com.example.nhatro.repository.UserRepository;
+import com.example.nhatro.repository.VehicleRepository;
 import com.example.nhatro.repository.TenantRepository;
 import com.example.nhatro.repository.OwnerRepository;
 import com.example.nhatro.entity.Tenant;
@@ -51,6 +56,9 @@ public class ContractServiceImpl implements ContractService {
 
     @Autowired
     private OwnerRepository ownerRepository;
+    
+    @Autowired
+    private VehicleRepository vehicleRepository;
 
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -90,6 +98,15 @@ public class ContractServiceImpl implements ContractService {
         // Validate dates
         if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new RuntimeException("End date must be after start date");
+        }
+        
+        // Kiểm tra hostel đã có contract ACTIVE chưa (mỗi hostel chỉ có 1 contract ACTIVE)
+        Hostel hostel = booking.getHostel();
+        Optional<Contract> existingActiveContract = contractRepository.findByHostel_RoomCodeAndStatus(
+                hostel.getRoomCode(), ContractStatus.ACTIVE);
+        if (existingActiveContract.isPresent()) {
+            throw new RuntimeException("This hostel (room code: " + hostel.getRoomCode() + 
+                    ") already has an active contract. Please terminate the existing contract first.");
         }
 
         // Tạo hợp đồng
@@ -257,6 +274,13 @@ public class ContractServiceImpl implements ContractService {
         Hostel hostel = contract.getHostel();
         hostel.setStatus(HostelStatus.AVAILABLE);
         hostelRepository.save(hostel);
+        
+        // Cập nhật vehicle status sang INACTIVE nếu có phương tiện
+        Vehicle vehicle = contract.getVehicle();
+        if (vehicle != null) {
+            vehicle.setStatus(VehicleStatus.INACTIVE);
+            vehicleRepository.save(vehicle);
+        }
         
         return mapToContractResponse(contract);
     }

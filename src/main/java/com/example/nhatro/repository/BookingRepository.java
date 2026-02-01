@@ -1,5 +1,6 @@
 package com.example.nhatro.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,4 +30,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     
     // Tìm booking theo số điện thoại khách hàng (chứa số điện thoại)
     List<Booking> findByCustomerPhoneContaining(String customerPhone);
+    
+    // Tìm booking theo status và thời gian tạo trước một mốc thời gian
+    List<Booking> findByStatusAndCreatedAtBefore(BookingStatus status, LocalDateTime createdAt);
 }

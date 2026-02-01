@@ -12,6 +12,7 @@ public class VehicleResponseDTO {
     private String nameTenant;
     private String roomCode;
     private String licensePlates;
+    private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 } 
