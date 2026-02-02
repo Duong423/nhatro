@@ -16,7 +16,10 @@ public class BillRequestDTO {
         private Long contractId;        // Chỉ cần 1 trong 2: contractId hoặc roomCode
         private String roomCode;
         private Integer billingMonth;   
-        private Integer billingYear;    
+        private Integer billingYear;
+        private BigDecimal electricityCost;
+        private BigDecimal waterCost;
+        private BigDecimal serviceCost;    
         private String note;           
     }
     

@@ -86,8 +86,8 @@ public class BillServiceImpl implements BillService {
         
         // Tự động lấy giá từ Contract
         bill.setRoomPrice(contract.getMonthlyRent());
-        bill.setElectricityCost(contract.getElectricityCostPerUnit()); // Sẽ cập nhật sau khi có chỉ số điện
-        bill.setWaterCost(contract.getWaterCostPerUnit()); // Sẽ cập nhật sau khi có chỉ số nước
+        bill.setElectricityCost(request.getElectricityCost()); // Sẽ cập nhật sau khi có chỉ số điện
+        bill.setWaterCost(request.getWaterCost()); // Sẽ cập nhật sau khi có chỉ số nước
         bill.setServiceCost(contract.getServiceFee() != null ? contract.getServiceFee() : BigDecimal.ZERO);
         
         // Tính tổng tiền

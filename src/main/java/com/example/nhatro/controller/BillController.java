@@ -181,6 +181,7 @@ public class BillController {
 
     /**
      * In hóa đơn PDF (Owner và Tenant)
+     * 
      * @param billId ID của hóa đơn cần in
      * @return File PDF hóa đơn
      */
@@ -189,17 +190,17 @@ public class BillController {
     public ResponseEntity<ByteArrayResource> printBillPdf(@PathVariable Long billId) {
         // Lấy thông tin hóa đơn
         BillResponseDTO bill = billService.getBillById(billId);
-        
+
         // Tạo PDF
         ByteArrayOutputStream pdfStream = pdfService.generateBillPdf(bill);
         ByteArrayResource resource = new ByteArrayResource(pdfStream.toByteArray());
-        
+
         // Tên file PDF
-        String filename = String.format("HoaDon_%s_Thang%d_%d.pdf", 
-                bill.getRoomCode(), 
-                bill.getBillingMonth(), 
+        String filename = String.format("HoaDon_%s_Thang%d_%d.pdf",
+                bill.getRoomCode(),
+                bill.getBillingMonth(),
                 bill.getBillingYear());
-        
+
         // Trả về file PDF
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
