@@ -45,11 +45,11 @@ public class VehicleServiceImpl implements VehicleService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Contract not found with ID: " + request.getContractId()));
             // Verify contract belongs to current owner
-            if (!contract.getHostel().getOwner().getId().equals(ownerId)) {
+            if (!contract.getOwner().getOwnerId().equals(ownerId)) {
                 throw new ResourceNotFoundException("Contract not found with ID: " + request.getContractId());
             }
         } else if (request.getRoomCode() != null) {
-            contract = contractRepository.findByHostel_RoomCodeAndHostel_Owner_IdAndStatus(
+            contract = contractRepository.findByRoomCodeAndOwnerIdAndStatus(
                     request.getRoomCode(), ownerId, ContractStatus.ACTIVE)
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Active contract not found for room code: " + request.getRoomCode()));
@@ -86,7 +86,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleResponseDTO getVehicleByRoomCode(String roomCode) {
         Long ownerId = getCurrentOwnerId();
-        Contract contract = contractRepository.findByHostel_RoomCodeAndHostel_Owner_IdAndStatus(
+        Contract contract = contractRepository.findByRoomCodeAndOwnerIdAndStatus(
                 roomCode, ownerId, ContractStatus.ACTIVE)
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Active contract not found for room code: " + roomCode));
