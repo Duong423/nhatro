@@ -1,8 +1,12 @@
 package com.example.nhatro.controller;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +25,7 @@ import com.example.nhatro.dto.request.BillRequestDTO.CreateBillRequestDTO;
 import com.example.nhatro.dto.request.BillRequestDTO.UpdateBillRequestDTO;
 import com.example.nhatro.dto.response.BillResponseDTO;
 import com.example.nhatro.service.BillService;
+import com.example.nhatro.service.PdfService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class BillController {
 
     private final BillService billService;
+    private final PdfService pdfService;
 
     /**
      * Tạo hóa đơn thủ công (Owner only)
@@ -171,5 +177,34 @@ public class BillController {
                 .code(HttpStatus.OK.value())
                 .message("Monthly bills generated successfully")
                 .build();
+    }
+
+    /**
+     * In hóa đơn PDF (Owner và Tenant)
+     * @param billId ID của hóa đơn cần in
+     * @return File PDF hóa đơn
+     */
+    @GetMapping("/{billId}/print")
+    @PreAuthorize("hasAnyRole('OWNER', 'TENANT')")
+    public ResponseEntity<ByteArrayResource> printBillPdf(@PathVariable Long billId) {
+        // Lấy thông tin hóa đơn
+        BillResponseDTO bill = billService.getBillById(billId);
+        
+        // Tạo PDF
+        ByteArrayOutputStream pdfStream = pdfService.generateBillPdf(bill);
+        ByteArrayResource resource = new ByteArrayResource(pdfStream.toByteArray());
+        
+        // Tên file PDF
+        String filename = String.format("HoaDon_%s_Thang%d_%d.pdf", 
+                bill.getRoomCode(), 
+                bill.getBillingMonth(), 
+                bill.getBillingYear());
+        
+        // Trả về file PDF
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(resource.contentLength())
+                .body(resource);
     }
 }
