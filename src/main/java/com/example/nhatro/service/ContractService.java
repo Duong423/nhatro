@@ -47,4 +47,9 @@ public interface ContractService {
      * Cập nhật thông tin hợp đồng
      */
     ContractResponseDTO updateContract(Long contractId, UpdateContractRequestDTO request);
+    
+    /**
+     * Tìm kiếm hợp đồng theo số điện thoại (tenant hoặc owner)
+     */
+    List<ContractResponseDTO> searchContractsByPhone(String phone);
 }

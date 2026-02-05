@@ -52,20 +52,6 @@ public class BillController {
     }
 
     /**
-     * Lấy chi tiết hóa đơn theo ID (Owner và Tenant)
-     */
-    @GetMapping("/{billId}")
-    @PreAuthorize("hasAnyRole('OWNER', 'TENANT')")
-    public ApiResponse<BillResponseDTO> getBillById(@PathVariable Long billId) {
-        BillResponseDTO response = billService.getBillById(billId);
-        return ApiResponse.<BillResponseDTO>builder()
-                .code(HttpStatus.OK.value())
-                .message("Bill retrieved successfully")
-                .result(response)
-                .build();
-    }
-
-    /**
      * Lấy danh sách hóa đơn của Owner
      */
     @GetMapping("/owner")
@@ -75,6 +61,20 @@ public class BillController {
         return ApiResponse.<List<BillResponseDTO>>builder()
                 .code(HttpStatus.OK.value())
                 .message("Bills retrieved successfully")
+                .result(response)
+                .build();
+    }
+
+    /**
+     * Lấy chi tiết hóa đơn theo ID (Owner và Tenant)
+     */
+    @GetMapping("/{billId}")
+    @PreAuthorize("hasAnyRole('OWNER', 'TENANT')")
+    public ApiResponse<BillResponseDTO> getBillById(@PathVariable Long billId) {
+        BillResponseDTO response = billService.getBillById(billId);
+        return ApiResponse.<BillResponseDTO>builder()
+                .code(HttpStatus.OK.value())
+                .message("Bill retrieved successfully")
                 .result(response)
                 .build();
     }

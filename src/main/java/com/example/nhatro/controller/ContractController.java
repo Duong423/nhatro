@@ -252,4 +252,28 @@ public class ContractController {
                     .build();
         }
     }
+    
+    /**
+     * OWNER
+     * Tìm kiếm hợp đồng theo số điện thoại (tenant hoặc owner)
+     * API: GET /api/contracts/owner/search?phone=0123456789
+     */
+    @IsOwner
+    @GetMapping("/owner/search")
+    public ApiResponse<List<ContractResponseDTO>> searchContractsByPhone(@RequestParam String phone) {
+        try {
+            List<ContractResponseDTO> contracts = contractService.searchContractsByPhone(phone);
+            return ApiResponse.<List<ContractResponseDTO>>builder()
+                    .code(200)
+                    .message("Search completed successfully")
+                    .result(contracts)
+                    .build();
+        } catch (RuntimeException e) {
+            return ApiResponse.<List<ContractResponseDTO>>builder()
+                    .code(400)
+                    .message("Error searching contracts: " + e.getMessage())
+                    .result(null)
+                    .build();
+        }
+    }
 }

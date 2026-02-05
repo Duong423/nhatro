@@ -17,8 +17,8 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     // Tìm hóa đơn theo contract
     List<Bill> findByContract_ContractId(Long contractId);
     
-    // Tìm hóa đơn theo roomCode và owner (dùng contract.owner thay vì hostel.owner)
-    @Query("SELECT b FROM Bill b WHERE b.roomCode = :roomCode AND b.contract.owner.ownerId = :ownerId")
+    // Tìm hóa đơn theo roomCode và owner (chỉ lấy của hợp đồng ACTIVE)
+    @Query("SELECT b FROM Bill b WHERE b.roomCode = :roomCode AND b.contract.owner.ownerId = :ownerId AND b.contract.status = 'ACTIVE'")
     List<Bill> findByRoomCodeAndOwnerId(@Param("roomCode") String roomCode, @Param("ownerId") Long ownerId);
     
     // Tìm hóa đơn theo tháng/năm và contract
@@ -28,12 +28,12 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     // Tìm hóa đơn theo status
     List<Bill> findByStatus(BillStatus status);
     
-    // Tìm hóa đơn của owner (dùng contract.owner)
-    @Query("SELECT b FROM Bill b WHERE b.contract.owner.ownerId = :ownerId ORDER BY b.billingYear DESC, b.billingMonth DESC")
+    // Tìm hóa đơn của owner (chỉ lấy của hợp đồng ACTIVE)
+    @Query("SELECT b FROM Bill b WHERE b.contract.owner.ownerId = :ownerId AND b.contract.status = 'ACTIVE' ORDER BY b.billingYear DESC, b.billingMonth DESC")
     List<Bill> findByOwnerId(@Param("ownerId") Long ownerId);
     
-    // Tìm hóa đơn của tenant
-    @Query("SELECT b FROM Bill b WHERE b.contract.tenant.tenantId = :tenantId ORDER BY b.billingYear DESC, b.billingMonth DESC")
+    // Tìm hóa đơn của tenant (chỉ lấy của hợp đồng ACTIVE)
+    @Query("SELECT b FROM Bill b WHERE b.contract.tenant.tenantId = :tenantId AND b.contract.status = 'ACTIVE' ORDER BY b.billingYear DESC, b.billingMonth DESC")
     List<Bill> findByTenantId(@Param("tenantId") Long tenantId);
     
     // Tìm các hóa đơn của các contract đang active

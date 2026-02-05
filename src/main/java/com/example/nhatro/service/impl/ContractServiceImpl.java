@@ -389,4 +389,19 @@ public class ContractServiceImpl implements ContractService {
                 .createdAt(contract.getCreatedAt())
                 .build();
     }
+    
+    @Override
+    public List<ContractResponseDTO> searchContractsByPhone(String phone) {
+        Owner owner = getCurrentOwner();
+        List<Contract> contracts = contractRepository.findByOwnerIdAndPhone(owner.getOwnerId(), phone);
+        return contracts.stream()
+                .map(this::mapToContractResponse)
+                .collect(Collectors.toList());
+    }
+    
+    private Owner getCurrentOwner() {
+        User currentUser = getCurrentUser();
+        return ownerRepository.findByUser_Id(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("Current user is not an owner"));
+    }
 }
