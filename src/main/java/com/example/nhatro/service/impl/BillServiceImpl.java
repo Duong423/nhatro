@@ -20,14 +20,17 @@ import com.example.nhatro.dto.response.BillResponseDTO;
 import com.example.nhatro.entity.Bill;
 import com.example.nhatro.entity.Contract;
 import com.example.nhatro.entity.Owner;
+import com.example.nhatro.entity.PaymentHistory;
 import com.example.nhatro.entity.Tenant;
 import com.example.nhatro.entity.User;
 import com.example.nhatro.enums.BillStatus;
 import com.example.nhatro.enums.ContractStatus;
 import com.example.nhatro.exception.ResourceNotFoundException;
+import com.example.nhatro.dto.response.PaymentHistoryResponseDTO;
 import com.example.nhatro.repository.BillRepository;
 import com.example.nhatro.repository.ContractRepository;
 import com.example.nhatro.repository.OwnerRepository;
+import com.example.nhatro.repository.PaymentHistoryRepository;
 import com.example.nhatro.repository.TenantRepository;
 import com.example.nhatro.repository.UserRepository;
 import com.example.nhatro.service.BillService;
@@ -45,6 +48,7 @@ public class BillServiceImpl implements BillService {
     private final UserRepository userRepository;
     private final OwnerRepository ownerRepository;
     private final TenantRepository tenantRepository;
+    private final PaymentHistoryRepository paymentHistoryRepository;
 
     @Override
     @Transactional
@@ -258,6 +262,9 @@ public class BillServiceImpl implements BillService {
         bill = billRepository.save(bill);
         log.info("Confirmed payment for bill {} by user {}", billId, userId);
         
+        // Lưu dữ liệu vào bảng payment_history
+        savePaymentHistory(bill);
+        
         return mapToDto(bill);
     }
 
@@ -400,6 +407,97 @@ public class BillServiceImpl implements BillService {
         }
         
         log.info("Successfully updated {} bills to OVERDUE status", overdueBills.size());
+    }
+
+    private void savePaymentHistory(Bill bill) {
+        Contract contract = bill.getContract();
+        Tenant tenant = contract.getTenant();
+        Owner owner = contract.getOwner();
+        
+        PaymentHistory history = PaymentHistory.builder()
+                .bill(bill)
+                .billIdRef(bill.getBillId())
+                .contractId(contract.getContractId())
+                .roomCode(bill.getRoomCode())
+                .billingMonth(bill.getBillingMonth())
+                .billingYear(bill.getBillingYear())
+                .roomPrice(bill.getRoomPrice())
+                .electricityCost(bill.getElectricityCost())
+                .waterCost(bill.getWaterCost())
+                .serviceCost(bill.getServiceCost())
+                .totalAmount(bill.getTotalAmount())
+                .paymentMethod(bill.getPaymentMethod())
+                .transactionCode(bill.getTransactionCode())
+                .paymentDate(bill.getPaymentDate())
+                .dueDate(bill.getDueDate())
+                .tenantId(tenant != null ? tenant.getTenantId() : null)
+                .tenantName(tenant != null ? tenant.getName() : null)
+                .tenantPhone(tenant != null ? tenant.getPhone() : null)
+                .ownerId(owner.getOwnerId())
+                .ownerName(owner.getName())
+                .ownerPhone(owner.getPhone())
+                .note(bill.getNote())
+                .build();
+        
+        paymentHistoryRepository.save(history);
+        log.info("Saved payment history for bill {} - Room {} - Amount {}", 
+                bill.getBillId(), bill.getRoomCode(), bill.getTotalAmount());
+    }
+
+    @Override
+    public List<PaymentHistoryResponseDTO> getPaymentHistoryByOwner() {
+        Long ownerId = getCurrentOwnerId();
+        List<PaymentHistory> histories = paymentHistoryRepository.findByOwnerIdOrderByPaymentDateDesc(ownerId);
+        return histories.stream().map(this::mapToPaymentHistoryDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PaymentHistoryResponseDTO> getPaymentHistoryByTenant() {
+        Long tenantId = getCurrentTenantId();
+        List<PaymentHistory> histories = paymentHistoryRepository.findByTenantIdOrderByPaymentDateDesc(tenantId);
+        return histories.stream().map(this::mapToPaymentHistoryDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PaymentHistoryResponseDTO> getPaymentHistoryByRoomCode(String roomCode) {
+        Long ownerId = getCurrentOwnerId();
+        List<PaymentHistory> histories = paymentHistoryRepository.findByRoomCodeAndOwnerIdOrderByPaymentDateDesc(roomCode, ownerId);
+        return histories.stream().map(this::mapToPaymentHistoryDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PaymentHistoryResponseDTO> getPaymentHistoryByMonth(Integer month, Integer year) {
+        Long ownerId = getCurrentOwnerId();
+        List<PaymentHistory> histories = paymentHistoryRepository.findByBillingMonthAndBillingYearAndOwnerIdOrderByPaymentDateDesc(month, year, ownerId);
+        return histories.stream().map(this::mapToPaymentHistoryDto).collect(Collectors.toList());
+    }
+
+    private PaymentHistoryResponseDTO mapToPaymentHistoryDto(PaymentHistory history) {
+        return PaymentHistoryResponseDTO.builder()
+                .paymentHistoryId(history.getPaymentHistoryId())
+                .billId(history.getBillIdRef())
+                .contractId(history.getContractId())
+                .roomCode(history.getRoomCode())
+                .billingMonth(history.getBillingMonth())
+                .billingYear(history.getBillingYear())
+                .roomPrice(history.getRoomPrice())
+                .electricityCost(history.getElectricityCost())
+                .waterCost(history.getWaterCost())
+                .serviceCost(history.getServiceCost())
+                .totalAmount(history.getTotalAmount())
+                .paymentMethod(history.getPaymentMethod())
+                .transactionCode(history.getTransactionCode())
+                .paymentDate(history.getPaymentDate())
+                .dueDate(history.getDueDate())
+                .tenantId(history.getTenantId())
+                .tenantName(history.getTenantName())
+                .tenantPhone(history.getTenantPhone())
+                .ownerId(history.getOwnerId())
+                .ownerName(history.getOwnerName())
+                .ownerPhone(history.getOwnerPhone())
+                .note(history.getNote())
+                .createdAt(history.getCreatedAt())
+                .build();
     }
 
     private BillResponseDTO mapToDto(Bill bill) {

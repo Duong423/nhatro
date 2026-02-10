@@ -2,10 +2,12 @@ package com.example.nhatro.service.impl;
 
 import com.example.nhatro.dto.request.HostelRequestDTO.HostelRequestDto;
 import com.example.nhatro.dto.request.HostelRequestDTO.UpdateHostelRequestDTO;
+import com.example.nhatro.dto.response.HostelListResponseDto;
 import com.example.nhatro.dto.response.HostelResponseDto;
 import com.example.nhatro.dto.response.UpdateHostelResponseDTO;
 import com.example.nhatro.entity.Hostel;
 import com.example.nhatro.entity.User;
+import com.example.nhatro.enums.HostelStatus;
 // (Removed import for entity Service to avoid name clash)
 
 import com.example.nhatro.mapper.HostelMapper;
@@ -199,23 +201,33 @@ public class HostelServiceImpl implements HostelService {
      
 
     /**
-     * Lấy chi tiết toàn bộ phòng trọ
+     * Lấy chi tiết toàn bộ phòng trọ (cho tenant) + thống kê phòng trống/tổng
      */
     @Override
-    public List<HostelResponseDto> getAllHostelsForTenant() {
+    public HostelListResponseDto getAllHostelsForTenant() {
         List<Hostel> hostels = hostelRepository.findAll();
         List<HostelResponseDto> responseDtos = new ArrayList<>();
         for (Hostel hostel : hostels) {
             responseDtos.add(HostelMapper.toResponseDto(hostel));
         }
-        return responseDtos;
+
+        long totalRooms = hostelRepository.countAllRooms();
+        long availableRooms = hostelRepository.countByStatus(HostelStatus.AVAILABLE);
+        long occupiedRooms = hostelRepository.countByStatus(HostelStatus.FULL);
+
+        return HostelListResponseDto.builder()
+                .totalRooms(totalRooms)
+                .availableRooms(availableRooms)
+                .occupiedRooms(occupiedRooms)
+                .hostels(responseDtos)
+                .build();
     }
     
     /**
-     * Lấy danh sách hostel của owner hiện tại
+     * Lấy danh sách hostel của owner hiện tại + thống kê phòng trống/tổng
      */
     @Override
-    public List<HostelResponseDto> getHostelsByOwner() {
+    public HostelListResponseDto getHostelsByOwner() {
         // Lấy thông tin owner đang đăng nhập
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
@@ -228,7 +240,18 @@ public class HostelServiceImpl implements HostelService {
         for (Hostel hostel : hostels) {
             responseDtos.add(HostelMapper.toResponseDto(hostel));
         }
-        return responseDtos;
+
+        // Đếm số phòng trống/tổng của owner
+        long totalRooms = hostelRepository.countByOwnerId(owner.getId());
+        long availableRooms = hostelRepository.countByOwnerIdAndStatus(owner.getId(), HostelStatus.AVAILABLE);
+        long occupiedRooms = hostelRepository.countByOwnerIdAndStatus(owner.getId(), HostelStatus.FULL);
+
+        return HostelListResponseDto.builder()
+                .totalRooms(totalRooms)
+                .availableRooms(availableRooms)
+                .occupiedRooms(occupiedRooms)
+                .hostels(responseDtos)
+                .build();
     }
     
 

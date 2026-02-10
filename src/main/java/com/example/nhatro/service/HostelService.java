@@ -2,6 +2,7 @@ package com.example.nhatro.service;
 
 import com.example.nhatro.dto.request.HostelRequestDTO.HostelRequestDto;
 import com.example.nhatro.dto.request.HostelRequestDTO.UpdateHostelRequestDTO;
+import com.example.nhatro.dto.response.HostelListResponseDto;
 import com.example.nhatro.dto.response.HostelResponseDto;
 import com.example.nhatro.dto.response.UpdateHostelResponseDTO;
 import com.example.nhatro.entity.Hostel;
@@ -20,9 +21,9 @@ public interface HostelService {
 
     HostelResponseDto updateHostelImages(Long hostelId, java.util.List<org.springframework.web.multipart.MultipartFile> imageFiles, java.util.List<String> keepImages);
 
-    List<HostelResponseDto> getAllHostelsForTenant();
+    HostelListResponseDto getAllHostelsForTenant();
     
-    List<HostelResponseDto> getHostelsByOwner();
+    HostelListResponseDto getHostelsByOwner();
     
     HostelResponseDto getHostelById(Long hostelId);
 

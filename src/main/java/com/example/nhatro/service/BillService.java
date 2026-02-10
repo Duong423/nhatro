@@ -6,6 +6,7 @@ import com.example.nhatro.dto.request.BillRequestDTO.ConfirmPaymentRequestDTO;
 import com.example.nhatro.dto.request.BillRequestDTO.CreateBillRequestDTO;
 import com.example.nhatro.dto.request.BillRequestDTO.UpdateBillRequestDTO;
 import com.example.nhatro.dto.response.BillResponseDTO;
+import com.example.nhatro.dto.response.PaymentHistoryResponseDTO;
 
 public interface BillService {
     
@@ -41,4 +42,18 @@ public interface BillService {
     
     // Tự động cập nhật status = OVERDUE cho hóa đơn quá hạn
     void updateOverdueBills();
+
+    // === Lịch sử thanh toán ===
+    
+    // Lấy lịch sử thanh toán của owner
+    List<PaymentHistoryResponseDTO> getPaymentHistoryByOwner();
+    
+    // Lấy lịch sử thanh toán của tenant
+    List<PaymentHistoryResponseDTO> getPaymentHistoryByTenant();
+    
+    // Lấy lịch sử thanh toán theo room code
+    List<PaymentHistoryResponseDTO> getPaymentHistoryByRoomCode(String roomCode);
+    
+    // Lấy lịch sử thanh toán theo tháng/năm
+    List<PaymentHistoryResponseDTO> getPaymentHistoryByMonth(Integer month, Integer year);
 }

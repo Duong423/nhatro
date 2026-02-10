@@ -1,6 +1,7 @@
 package com.example.nhatro.controller.HostelControllers;
 
 import com.example.nhatro.common.dto.response.ApiResponse;
+import com.example.nhatro.dto.response.HostelListResponseDto;
 import com.example.nhatro.dto.response.HostelResponseDto;
 import com.example.nhatro.dto.response.UpdateHostelResponseDTO;
 import com.example.nhatro.service.HostelService;
@@ -129,29 +130,29 @@ public class HostelController {
 
     /**
      * Lấy danh sách tất cả hostel (public - cho mọi người xem, kể cả khách vãng
-     * lai)
+     * lai) + thống kê phòng trống/tổng
      */
     @GetMapping("/tenant/detailsHostel")
-    public ApiResponse<List<HostelResponseDto>> getAllHostelsForTenant() {
-        List<HostelResponseDto> hostels = hostelService.getAllHostelsForTenant();
-        return ApiResponse.<List<HostelResponseDto>>builder()
+    public ApiResponse<HostelListResponseDto> getAllHostelsForTenant() {
+        HostelListResponseDto result = hostelService.getAllHostelsForTenant();
+        return ApiResponse.<HostelListResponseDto>builder()
                 .code(200)
                 .message("Lấy chi tiết danh sách tất cả nhà trọ thành công")
-                .result(hostels)
+                .result(result)
                 .build();
     }
 
     /**
-     * Owner lấy danh sách hostel của chính mình
+     * Owner lấy danh sách hostel của chính mình + thống kê phòng trống/tổng
      */
     @IsOwner
     @GetMapping("/owner/my-hostels")
-    public ApiResponse<List<HostelResponseDto>> getMyHostels() {
-        List<HostelResponseDto> hostels = hostelService.getHostelsByOwner();
-        return ApiResponse.<List<HostelResponseDto>>builder()
+    public ApiResponse<HostelListResponseDto> getMyHostels() {
+        HostelListResponseDto result = hostelService.getHostelsByOwner();
+        return ApiResponse.<HostelListResponseDto>builder()
                 .code(200)
                 .message("Lấy danh sách hostel của owner thành công")
-                .result(hostels)
+                .result(result)
                 .build();
     }
 

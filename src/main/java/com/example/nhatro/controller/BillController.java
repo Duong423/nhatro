@@ -24,6 +24,7 @@ import com.example.nhatro.dto.request.BillRequestDTO.ConfirmPaymentRequestDTO;
 import com.example.nhatro.dto.request.BillRequestDTO.CreateBillRequestDTO;
 import com.example.nhatro.dto.request.BillRequestDTO.UpdateBillRequestDTO;
 import com.example.nhatro.dto.response.BillResponseDTO;
+import com.example.nhatro.dto.response.PaymentHistoryResponseDTO;
 import com.example.nhatro.service.BillService;
 import com.example.nhatro.service.PdfService;
 
@@ -207,5 +208,65 @@ public class BillController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .contentLength(resource.contentLength())
                 .body(resource);
+    }
+
+    // ==================== PAYMENT HISTORY ====================
+
+    /**
+     * Lấy lịch sử thanh toán của Owner
+     */
+    @GetMapping("/payment-history/owner")
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<List<PaymentHistoryResponseDTO>> getPaymentHistoryByOwner() {
+        List<PaymentHistoryResponseDTO> response = billService.getPaymentHistoryByOwner();
+        return ApiResponse.<List<PaymentHistoryResponseDTO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Payment history retrieved successfully")
+                .result(response)
+                .build();
+    }
+
+    /**
+     * Lấy lịch sử thanh toán của Tenant
+     */
+    @GetMapping("/payment-history/tenant")
+    @PreAuthorize("hasRole('TENANT')")
+    public ApiResponse<List<PaymentHistoryResponseDTO>> getPaymentHistoryByTenant() {
+        List<PaymentHistoryResponseDTO> response = billService.getPaymentHistoryByTenant();
+        return ApiResponse.<List<PaymentHistoryResponseDTO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Payment history retrieved successfully")
+                .result(response)
+                .build();
+    }
+
+    /**
+     * Lấy lịch sử thanh toán theo room code (Owner only)
+     */
+    @GetMapping("/payment-history/room/{roomCode}")
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<List<PaymentHistoryResponseDTO>> getPaymentHistoryByRoomCode(@PathVariable String roomCode) {
+        List<PaymentHistoryResponseDTO> response = billService.getPaymentHistoryByRoomCode(roomCode);
+        return ApiResponse.<List<PaymentHistoryResponseDTO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Payment history retrieved successfully")
+                .result(response)
+                .build();
+    }
+
+    /**
+     * Lấy lịch sử thanh toán theo tháng/năm (Owner only)
+     */
+    @GetMapping("/payment-history/monthly")
+    @PreAuthorize("hasRole('OWNER')")
+    public ApiResponse<List<PaymentHistoryResponseDTO>> getPaymentHistoryByMonth(
+            @RequestParam Integer month,
+            @RequestParam Integer year) {
+        List<PaymentHistoryResponseDTO> response = billService.getPaymentHistoryByMonth(month, year);
+        return ApiResponse.<List<PaymentHistoryResponseDTO>>builder()
+                .code(HttpStatus.OK.value())
+                .message("Payment history retrieved successfully")
+                .result(response)
+                .build();
     }
 }
