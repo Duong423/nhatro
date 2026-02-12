@@ -1,5 +1,6 @@
 package com.example.nhatro.service.impl;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ import com.example.nhatro.repository.PaymentHistoryRepository;
 import com.example.nhatro.repository.TenantRepository;
 import com.example.nhatro.repository.UserRepository;
 import com.example.nhatro.service.BillService;
+import com.example.nhatro.service.PaymentHistoryExcelService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +51,7 @@ public class BillServiceImpl implements BillService {
     private final OwnerRepository ownerRepository;
     private final TenantRepository tenantRepository;
     private final PaymentHistoryRepository paymentHistoryRepository;
+    private final PaymentHistoryExcelService paymentHistoryExcelService;
 
     @Override
     @Transactional
@@ -498,6 +501,12 @@ public class BillServiceImpl implements BillService {
                 .note(history.getNote())
                 .createdAt(history.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    public ByteArrayOutputStream exportPaymentHistoryToExcel(Integer month, Integer year) {
+        List<PaymentHistoryResponseDTO> histories = getPaymentHistoryByMonth(month, year);
+        return paymentHistoryExcelService.exportPaymentHistoryToExcel(histories, month, year);
     }
 
     private BillResponseDTO mapToDto(Bill bill) {

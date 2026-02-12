@@ -269,4 +269,38 @@ public class BillController {
                 .result(response)
                 .build();
     }
+
+    /**
+     * Xuất lịch sử thanh toán theo tháng/năm ra file Excel (Owner only)
+     * Nếu không truyền month/year, mặc định lấy tháng/năm hiện tại
+     * 
+     * @param month tháng cần xuất (mặc định: tháng hiện tại)
+     * @param year  năm cần xuất (mặc định: năm hiện tại)
+     * @return File Excel chứa lịch sử thanh toán
+     */
+    @GetMapping("/payment-history/export-excel")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ByteArrayResource> exportPaymentHistoryToExcel(
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year) {
+
+        // Mặc định lấy tháng/năm hiện tại nếu không truyền vào
+        if (month == null) {
+            month = java.time.LocalDate.now().getMonthValue();
+        }
+        if (year == null) {
+            year = java.time.LocalDate.now().getYear();
+        }
+
+        ByteArrayOutputStream excelStream = billService.exportPaymentHistoryToExcel(month, year);
+        ByteArrayResource resource = new ByteArrayResource(excelStream.toByteArray());
+
+        String filename = String.format("LichSuThanhToan_Thang%d_%d.xlsx", month, year);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentLength(resource.contentLength())
+                .body(resource);
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.nhatro.service;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 import com.example.nhatro.dto.request.BillRequestDTO.ConfirmPaymentRequestDTO;
@@ -56,4 +57,7 @@ public interface BillService {
     
     // Lấy lịch sử thanh toán theo tháng/năm
     List<PaymentHistoryResponseDTO> getPaymentHistoryByMonth(Integer month, Integer year);
+
+    // Xuất lịch sử thanh toán theo tháng/năm ra file Excel
+    ByteArrayOutputStream exportPaymentHistoryToExcel(Integer month, Integer year);
 }
