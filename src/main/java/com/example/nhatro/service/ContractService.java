@@ -5,6 +5,7 @@ import java.util.List;
 import com.example.nhatro.dto.request.ContractRequestDTO.ContractRequestDTO;
 import com.example.nhatro.dto.request.ContractRequestDTO.UpdateContractRequestDTO;
 import com.example.nhatro.dto.response.ContractResponseDTO;
+import com.example.nhatro.dto.response.TenantInfoDTO;
 
 public interface ContractService {
     
@@ -52,4 +53,9 @@ public interface ContractService {
      * Tìm kiếm hợp đồng theo số điện thoại (tenant hoặc owner)
      */
     List<ContractResponseDTO> searchContractsByPhone(String phone);
+
+    /**
+     * Lấy danh sách người thuê từ hợp đồng đang có hiệu lực (ACTIVE) của chủ nhà hiện tại
+     */
+    List<TenantInfoDTO> getTenantsFromActiveContracts();
 }

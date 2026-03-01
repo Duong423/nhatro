@@ -18,6 +18,7 @@ import com.example.nhatro.config.IsOwner;
 import com.example.nhatro.dto.request.ContractRequestDTO.ContractRequestDTO;
 import com.example.nhatro.dto.request.ContractRequestDTO.UpdateContractRequestDTO;
 import com.example.nhatro.dto.response.ContractResponseDTO;
+import com.example.nhatro.dto.response.TenantInfoDTO;
 import com.example.nhatro.service.ContractService;
 
 import jakarta.validation.Valid;
@@ -272,6 +273,30 @@ public class ContractController {
             return ApiResponse.<List<ContractResponseDTO>>builder()
                     .code(400)
                     .message("Error searching contracts: " + e.getMessage())
+                    .result(null)
+                    .build();
+        }
+    }
+
+    /**
+     * OWNER
+     * Lấy danh sách người thuê từ hợp đồng đang có hiệu lực (ACTIVE)
+     * API: GET /api/contracts/owner/active-tenants
+     */
+    @IsOwner
+    @GetMapping("/owner/active-tenants")
+    public ApiResponse<List<TenantInfoDTO>> getTenantsFromActiveContracts() {
+        try {
+            List<TenantInfoDTO> tenants = contractService.getTenantsFromActiveContracts();
+            return ApiResponse.<List<TenantInfoDTO>>builder()
+                    .code(200)
+                    .message("Active tenants retrieved successfully")
+                    .result(tenants)
+                    .build();
+        } catch (RuntimeException e) {
+            return ApiResponse.<List<TenantInfoDTO>>builder()
+                    .code(400)
+                    .message("Error retrieving active tenants: " + e.getMessage())
                     .result(null)
                     .build();
         }

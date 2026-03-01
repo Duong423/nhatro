@@ -54,4 +54,7 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     // Tìm hợp đồng theo số điện thoại tenant (cho owner)
     @Query("SELECT c FROM Contract c WHERE c.owner.ownerId = :ownerId AND c.tenant.phone LIKE %:phone%")
     List<Contract> findByOwnerIdAndPhone(@Param("ownerId") Long ownerId, @Param("phone") String phone);
+
+    // Tìm danh sách hợp đồng của owner theo trạng thái
+    List<Contract> findByOwner_OwnerIdAndStatus(Long ownerId, ContractStatus status);
 }

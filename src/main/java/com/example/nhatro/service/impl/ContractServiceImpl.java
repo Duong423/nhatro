@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.nhatro.dto.request.ContractRequestDTO.ContractRequestDTO;
 import com.example.nhatro.dto.request.ContractRequestDTO.UpdateContractRequestDTO;
 import com.example.nhatro.dto.response.ContractResponseDTO;
+import com.example.nhatro.dto.response.TenantInfoDTO;
 import com.example.nhatro.dto.response.VehicleResponseDTO;
 import com.example.nhatro.entity.Booking;
 import com.example.nhatro.entity.Contract;
@@ -398,7 +399,29 @@ public class ContractServiceImpl implements ContractService {
                 .map(this::mapToContractResponse)
                 .collect(Collectors.toList());
     }
-    
+
+    @Override
+    public List<TenantInfoDTO> getTenantsFromActiveContracts() {
+        Owner owner = getCurrentOwner();
+        List<Contract> activeContracts = contractRepository
+                .findByOwner_OwnerIdAndStatus(owner.getOwnerId(), ContractStatus.ACTIVE);
+        return activeContracts.stream()
+                .map(contract -> {
+                    Tenant tenant = contract.getTenant();
+                    return TenantInfoDTO.builder()
+                            .tenantId(tenant.getTenantId())
+                            .name(tenant.getName())
+                            .phone(tenant.getPhone())
+                            .email(tenant.getEmail())
+                            .cccd(tenant.getCccd())
+                            .contractId(contract.getContractId())
+                            .hostelName(contract.getHostel().getName())
+                            .roomCode(contract.getHostel().getRoomCode())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
     private Owner getCurrentOwner() {
         User currentUser = getCurrentUser();
         return ownerRepository.findByUser_Id(currentUser.getId())
